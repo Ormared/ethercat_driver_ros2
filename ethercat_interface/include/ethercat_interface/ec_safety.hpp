@@ -89,7 +89,7 @@ public:
   *
   * @param safety_nets Safety nets
   *
-  * \pre DomainInfo and domain_regs vectors must have be initalized and
+  * \pre DomainInfo and domain_regs vectors must have been initialized and
   * activated. A call to EcMaster::activate() is required before calling
   * this function, to fill in the domain_regs vector offsets. Specifically
   * with IgH EtherCAT Master, the offset must have been initialized with the
