@@ -122,6 +122,22 @@ void EcSafety::printMemoryFrames(std::ostream & os)
   }
 }
 
+uint8_t * EcSafety::getMemoryStart(
+  const uint16_t position,
+  const uint16_t index,
+  const uint16_t subindex)
+{
+  for (auto & kv : domain_info_) {
+    auto & d = kv.second;
+    for (auto & reg : d->domain_regs) {
+      if (reg.position == position && reg.index == index && reg.subindex == subindex) {
+        return d->domain_pd + *(reg.offset);
+      }
+    }
+  }
+  return nullptr;
+}
+
 void EcSafety::printMemoryFrame(
   const uint16_t position,
   const uint16_t index,
@@ -130,21 +146,16 @@ void EcSafety::printMemoryFrame(
   bool binary,
   std::ostream & os)
 {
-  for (auto & kv : domain_info_) {
-    auto & d = kv.second;
-    for (auto & reg : d->domain_regs) {
-      if (reg.position == position && reg.index == index && reg.subindex == subindex) {
-        os << "Domain: " << kv.first << std::endl;
-        for (size_t i = 0; i < n; i++) {
-          if (binary) {
-            os << std::bitset<8>(d->domain_pd[*(reg.offset) + i]) << " ";
-          } else {
-            os << std::hex << (int)d->domain_pd[*(reg.offset) + i] << " ";
-          }
-        }
-        os << std::endl;
+  uint8_t * pointer = getMemoryStart(position, index, subindex);
+  if (pointer != nullptr) {
+    for (size_t i = 0; i < n; i++) {
+      if (binary) {
+        os << std::bitset<8>(pointer[i]) << " ";
+      } else {
+        os << std::hex << (int)(pointer[i]) << " ";
       }
     }
+    os << std::endl;
   }
 }
 
@@ -202,6 +213,16 @@ void EcSafety::update(uint32_t domain)
   ++update_counter_;
 }
 
+uint16_t last_control_word = 0;
+uint16_t last_status_word = 0;
+
+inline std::string word2Str(uint16_t word)
+{
+  std::stringstream ss;
+  ss << "0b" << std::bitset<8>(word);
+  return ss.str();
+}
+
 void EcSafety::readData(uint32_t domain)
 {
   // receive process data
@@ -231,6 +252,19 @@ void EcSafety::readData(uint32_t domain)
     for (int i = 0; i < entry.num_pdos; ++i) {
       (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
     }
+  }
+
+  uint16_t control_word = *(getMemoryStart(0, 0x6040, 0x00));
+  uint16_t status_word = *(getMemoryStart(0, 0x6041, 0x00));
+  if (last_control_word != control_word) {
+    std::cout << "Control word changed: " << word2Str(last_control_word) << " --> " <<
+      word2Str(control_word) << std::endl;
+    last_control_word = control_word;
+  }
+  if (last_status_word != status_word) {
+    std::cout << "Status word changed: " << word2Str(last_status_word) << " --> " <<
+      word2Str(status_word) << std::endl;
+    last_status_word = status_word;
   }
 
   ++update_counter_;

@@ -122,8 +122,16 @@ protected:
   */
   void printMemoryFrames(std::ostream & os = std::cout);
 
+  /** @brief Get pointer on memory frame for a certain point
+   * in the frame defined by a slave position, an index and a subindex
+   */
+  uint8_t * getMemoryStart(
+    const uint16_t position,
+    const uint16_t index,
+    const uint16_t subindex);
+
   /** @brief Output memory n bytes of memory from a certain point in
-   * the frame defined by a slave position, an index, subindex and  */
+   * the frame defined by a slave position, an index, subindex */
   void printMemoryFrame(
     const uint16_t position,
     const uint16_t index,
