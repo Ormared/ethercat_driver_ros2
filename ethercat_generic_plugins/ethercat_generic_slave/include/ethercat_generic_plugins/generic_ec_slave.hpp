@@ -48,6 +48,8 @@ public:
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
+  virtual void finishProcessData() {}
+
 protected:
   uint32_t counter_ = 0;
   std::vector<ec_pdo_info_t> rpdos_;

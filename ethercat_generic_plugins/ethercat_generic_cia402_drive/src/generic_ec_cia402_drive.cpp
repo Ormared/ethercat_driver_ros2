@@ -27,6 +27,20 @@ EcCiA402Drive::~EcCiA402Drive() {}
 
 bool EcCiA402Drive::initialized() const {return initialized_;}
 
+void EcCiA402Drive::updateState()
+{
+  if (status_word_ != last_status_word_) {
+    state_ = deviceState(status_word_);
+    if (state_ != last_state_) {
+      std::cout << "STATE: " << DEVICE_STATE_STR.at(state_)
+                << " with status word :" << status_word_ << std::endl;
+    }
+  }
+  last_status_word_ = status_word_;
+  last_state_ = state_;
+  counter_++;
+}
+
 void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
 {
   // Special case: ControlWord
@@ -90,20 +104,13 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
 
   // CHECK FOR STATE CHANGE
   if (index == all_channels_.size() - 1) {  // if last entry  in domain
-    if (status_word_ != last_status_word_) {
-      state_ = deviceState(status_word_);
-      if (state_ != last_state_) {
-        std::cout << "STATE: " << DEVICE_STATE_STR.at(state_)
-                  << " with status word :" << status_word_ << std::endl;
-      }
-    }
-    initialized_ = ((state_ == STATE_OPERATION_ENABLED) &&
-      (last_state_ == STATE_OPERATION_ENABLED)) ? true : false;
-
-    last_status_word_ = status_word_;
-    last_state_ = state_;
-    counter_++;
+    updateState();
   }
+}
+
+void EcCiA402Drive::finishProcessData()
+{
+  updateState();
 }
 
 bool EcCiA402Drive::setupSlave(

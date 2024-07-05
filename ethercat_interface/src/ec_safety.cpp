@@ -254,6 +254,16 @@ void EcSafety::readData(uint32_t domain)
     }
   }
 
+  // Look for slave at position 3
+  EcSlave * slave = nullptr;
+  for (auto & slave_info : slave_info_) {
+    if (slave_info.slave->position_ == 3) {
+      slave = slave_info.slave;
+      break;
+    }
+  }
+  slave->finishProcessData();
+
   uint16_t control_word = *(getMemoryStart(0, 0x6040, 0x00));
   uint16_t status_word = *(getMemoryStart(0, 0x6041, 0x00));
   if (last_control_word != control_word) {

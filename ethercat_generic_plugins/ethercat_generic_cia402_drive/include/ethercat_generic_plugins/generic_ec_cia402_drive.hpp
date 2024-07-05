@@ -50,6 +50,10 @@ public:
   int8_t mode_of_operation_display_ = 0;
   int8_t mode_of_operation_ = -1;
 
+  virtual void finishProcessData();
+
+  void updateState();
+
 protected:
   uint32_t counter_ = 0;
   uint16_t last_status_word_ = -1;
