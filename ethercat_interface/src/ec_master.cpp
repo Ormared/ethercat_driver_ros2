@@ -509,7 +509,10 @@ void EcMaster::checkSlaveStates()
       printf("Slave: %s.\n", s.online ? "online" : "offline");
     }
     if (s.operational != slave.config_state.operational) {
-      printf("Slave: %soperational.\n", s.operational ? "" : "Not ");
+      printf(
+        "Slave (alias:%d ,pos:%d ,vendor_id: %d, prod_id: %d) --> %soperational.\n",
+        slave.slave->alias_, slave.slave->position_, slave.slave->vendor_id_,
+        slave.slave->product_id_, s.operational ? "" : "Not ");
       slave.slave->set_state_is_operational(s.operational ? true : false);
     }
     slave.config_state = s;
