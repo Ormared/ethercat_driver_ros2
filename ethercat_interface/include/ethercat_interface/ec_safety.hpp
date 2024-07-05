@@ -122,6 +122,15 @@ protected:
   */
   void printMemoryFrames(std::ostream & os = std::cout);
 
+  /** @brief Output memory n bytes of memory from a certain point in
+   * the frame defined by a slave position, an index, subindex and  */
+  void printMemoryFrame(
+    const uint16_t position,
+    const uint16_t index,
+    const uint16_t subindex,
+    const size_t n,
+    std::ostream & os = std::cout);
+
   /** @brief Check the validity of the domain info and the ec_pdo_entry_reg_t
    * and throw an exception if not valid.
    *

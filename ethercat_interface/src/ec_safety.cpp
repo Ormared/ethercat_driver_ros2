@@ -121,6 +121,27 @@ void EcSafety::printMemoryFrames(std::ostream & os)
   }
 }
 
+void EcSafety::printMemoryFrame(
+  const uint16_t position,
+  const uint16_t index,
+  const uint16_t subindex,
+  const size_t n,
+  std::ostream & os)
+{
+  for (auto & kv : domain_info_) {
+    auto & d = kv.second;
+    for (auto & reg : d->domain_regs) {
+      if (reg.position == position && reg.index == index && reg.subindex == subindex) {
+        os << "Domain: " << kv.first << std::endl;
+        for (size_t i = 0; i < n; i++) {
+          os << std::hex << (int)d->domain_pd[*(reg.offset) + i] << " ";
+        }
+        os << std::endl;
+      }
+    }
+  }
+}
+
 void EcSafety::transferAll()
 {
   // Proceed to the transfer of all the data declared in transfers_.
