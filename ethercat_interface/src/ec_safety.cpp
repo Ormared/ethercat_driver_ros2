@@ -27,6 +27,7 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
+#include <bitset>
 
 namespace ethercat_interface
 {
@@ -126,6 +127,7 @@ void EcSafety::printMemoryFrame(
   const uint16_t index,
   const uint16_t subindex,
   const size_t n,
+  bool binary,
   std::ostream & os)
 {
   for (auto & kv : domain_info_) {
@@ -134,7 +136,11 @@ void EcSafety::printMemoryFrame(
       if (reg.position == position && reg.index == index && reg.subindex == subindex) {
         os << "Domain: " << kv.first << std::endl;
         for (size_t i = 0; i < n; i++) {
-          os << std::hex << (int)d->domain_pd[*(reg.offset) + i] << " ";
+          if (binary) {
+            os << std::bitset<8>(d->domain_pd[*(reg.offset) + i]) << " ";
+          } else {
+            os << std::hex << (int)d->domain_pd[*(reg.offset) + i] << " ";
+          }
         }
         os << std::endl;
       }

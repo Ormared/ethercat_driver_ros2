@@ -129,6 +129,7 @@ protected:
     const uint16_t index,
     const uint16_t subindex,
     const size_t n,
+    bool binary = false,
     std::ostream & os = std::cout);
 
   /** @brief Check the validity of the domain info and the ec_pdo_entry_reg_t
