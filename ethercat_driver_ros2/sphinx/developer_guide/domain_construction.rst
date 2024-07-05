@@ -5,7 +5,7 @@ How domain construction is done
 Interface between the master and the application
 ------------------------------------------------
 
-The link between the data used by the application and the one that transit on the EtherCAT network as EtherCAT frames is explicited via the definition of domains.
+The link between the data used by the application and the one that transit on the EtherCAT network as EtherCAT frames is explicitly provided via the definition of domains.
 Domains are contiguous memory areas that transit on the EtherCAT network.
 
 This mapping is provided to the application as offsets inside the communication frames in the domains.
