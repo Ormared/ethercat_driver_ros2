@@ -167,6 +167,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     }
 
     all_channels_.reserve(channels_nbr);
+    all_channels_skip_list_.reserve(channels_nbr);
     channels_nbr = 0;
 
     if (slave_config["rpdo"]) {
@@ -176,8 +177,10 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::RPDO;
           channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
+
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info.get_pdo_entry_info());
+          all_channels_skip_list_.push_back(channel_info.skip);
         }
         rpdos_.push_back(
           {
@@ -200,6 +203,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           channel_info.load_from_config(slave_config["tpdo"][i]["channels"][c]);
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info.get_pdo_entry_info());
+          all_channels_skip_list_.push_back(channel_info.skip);
         }
         tpdos_.push_back(
           {
@@ -214,7 +218,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
 
     // Remove gaps from domain mapping
     for (auto i = 0ul; i < all_channels_.size(); i++) {
-      if (all_channels_[i].index != 0x0000) {
+      if (all_channels_[i].index != 0x0000 && all_channels_skip_list_[i] != true) {
         domain_map_.push_back(i);
       }
     }

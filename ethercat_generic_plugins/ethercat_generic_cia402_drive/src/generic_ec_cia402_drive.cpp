@@ -103,14 +103,9 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
 
 
   // CHECK FOR STATE CHANGE
-  if (index == all_channels_.size() - 1) {  // if last entry  in domain
+  if (index == domain_map_.size() - 1) {  // if last entry in domain
     updateState();
   }
-}
-
-void EcCiA402Drive::finishProcessData()
-{
-  updateState();
 }
 
 bool EcCiA402Drive::setupSlave(

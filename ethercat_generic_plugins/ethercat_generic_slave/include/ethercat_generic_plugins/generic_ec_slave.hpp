@@ -48,12 +48,11 @@ public:
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 
-  virtual void finishProcessData() {}
-
 protected:
   uint32_t counter_ = 0;
   std::vector<ec_pdo_info_t> rpdos_;
   std::vector<ec_pdo_info_t> tpdos_;
+  std::vector<bool> all_channels_skip_list_;
   std::vector<ec_pdo_entry_info_t> all_channels_;
   std::vector<ethercat_interface::EcPdoChannelManager> pdo_channels_info_;
   std::vector<ethercat_interface::SMConfig> sm_configs_;

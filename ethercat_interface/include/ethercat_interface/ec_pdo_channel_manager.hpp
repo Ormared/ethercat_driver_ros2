@@ -188,6 +188,11 @@ public:
       data_mask = channel_config["mask"].as<uint8_t>();
     }
 
+    //skip
+    if (channel_config["skip"]) {
+      skip = channel_config["skip"].as<bool>();
+    }
+
     return true;
   }
 
@@ -223,6 +228,7 @@ public:
   bool override_command = false;
   double factor = 1;
   double offset = 0;
+  bool skip = false;
 
 private:
   std::vector<double> * command_interface_ptr_;

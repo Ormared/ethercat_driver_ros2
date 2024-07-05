@@ -70,8 +70,6 @@ public:
     return true;
   }
 
-  virtual void finishProcessData() {}
-
 public:
   inline
   void setAliasAndPosition(uint16_t alias, uint16_t position)
