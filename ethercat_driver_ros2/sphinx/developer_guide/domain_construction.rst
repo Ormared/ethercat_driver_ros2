@@ -9,7 +9,7 @@ The link between the data used by the application and the one that transit on th
 Domains are contiguous memory areas that transit on the EtherCAT network.
 
 This mapping is provided to the application as offsets inside the communication frames in the domains.
-For instance, is a 32bit integer is used by the application, the application got a pointer :math:`\text{pd}` to the start of the domain and an offset :math:`o` that give the pointer :math:`p` to the first octet of the integer via pointer arithmetics: :math:`\text{p} = \text{pd} + o`.
+For instance, is a 32bit integer is used by the application, the application got a pointer :math:`\text{pd}` to the start of the domain and an offset :math:`o` that give the pointer :math:`p` to the first octet of the integer via pointer arithmetic: :math:`\text{p} = \text{pd} + o`.
 
 The application has access to objects of type :code:`ec_pdo_entry_reg_t` (IgH master data structures) that contains the information to access the data in the domain:
 

@@ -65,8 +65,8 @@ on_init stage
 
 At the «on_init» stage, the Ethercat Driver for ROS2 will:
 
-1. first, look for all the EtherCAT modules in the URDF configuration that are exposed to ROS2 and load the corresponding plugins and their configuration. It effectively  calle the :code:`addSlave` method of the :code:`EcMaster` class for each of these modules.
-2. then, look for all the EtherCAT modules in the URDF that are «safety only» modules and load the corresponding plugins and their configuration. It effectively  calle the :code:`addSlave` method of the :code:`EcMaster` class for each of these modules.
+1. first, look for all the EtherCAT modules in the URDF configuration that are exposed to ROS2 and load the corresponding plugins and their configuration. It effectively  called the :code:`addSlave` method of the :code:`EcMaster` class for each of these modules.
+2. then, look for all the EtherCAT modules in the URDF that are «safety only» modules and load the corresponding plugins and their configuration. It effectively  called the :code:`addSlave` method of the :code:`EcMaster` class for each of these modules.
 3. Compute the map between transfers in terms of module, name, channel index and sub-index and the corresponding offsets in the communication frame.
 
 For each slave, in the add_slave method of the EcMaster class, the domain info are updated to prepare the ec_pdo_entry_reg_t data structures.
