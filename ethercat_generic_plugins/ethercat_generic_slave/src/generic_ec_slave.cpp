@@ -41,9 +41,9 @@ GenericEcSlave::GenericEcSlave()
 GenericEcSlave::~GenericEcSlave() {}
 int GenericEcSlave::assign_activate_dc_sync() {return assign_activate_;}
 
-void GenericEcSlave::processData(size_t index, uint8_t * domain_address)
+void GenericEcSlave::processData(size_t entry_idx, uint8_t * domain_address)
 {
-  pdo_channels_info_[domain_map_[index]].ec_update(domain_address);
+  pdo_channels_info_[domain_map_[entry_idx]].ec_update(domain_address);
 }
 
 const ec_sync_info_t * GenericEcSlave::syncs()

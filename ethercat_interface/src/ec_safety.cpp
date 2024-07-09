@@ -254,8 +254,8 @@ void EcSafety::readData(uint32_t domain)
     }
   }
 
-  uint16_t control_word = *(getMemoryStart(0, 0x6040, 0x00));
-  uint16_t status_word = *(getMemoryStart(0, 0x6041, 0x00));
+  uint16_t control_word = *(getMemoryStart(3, 0x6040, 0x00));
+  uint16_t status_word = *(getMemoryStart(3, 0x6041, 0x00));
   if (last_control_word != control_word) {
     std::cout << "Control word changed: " << word2Str(last_control_word) << " --> " <<
       word2Str(control_word) << std::endl;

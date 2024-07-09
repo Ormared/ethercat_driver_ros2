@@ -41,8 +41,9 @@ void EcCiA402Drive::updateState()
   counter_++;
 }
 
-void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
+void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 {
+  auto index = domain_map_[entry_idx];
   // Special case: ControlWord
   if (pdo_channels_info_[index].index == CiA402D_RPDO_CONTROLWORD) {
     if (is_operational_) {

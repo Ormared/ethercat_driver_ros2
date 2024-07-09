@@ -43,8 +43,8 @@ public:
   virtual ~EcSlave() {}
 
 public:
-  /** read or write data to the domain */
-  virtual void processData(size_t /*index*/, uint8_t * /*domain_address*/) {}
+  /** read or write data to the domain from the index of the entry in the recorded pdos */
+  virtual void processData(size_t /*entry_idx*/, uint8_t * /*domain_address*/) {}
   /** a pointer to syncs. return &syncs[0] */
   virtual const ec_sync_info_t * syncs() {return NULL;}
   virtual bool initialized() {return true;}
