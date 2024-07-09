@@ -184,7 +184,7 @@ TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
+  ASSERT_EQ(plugin_->pdo_channels_info_[8].state_interface_index, 1);
   uint8_t domain_address[2];
   EC_WRITE_S16(domain_address, 42);
   plugin_->processData(8, domain_address);
@@ -201,7 +201,7 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
+  ASSERT_EQ(plugin_->pdo_channels_info_[2].command_interface_index, 1);
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
   plugin_->processData(2, domain_address);

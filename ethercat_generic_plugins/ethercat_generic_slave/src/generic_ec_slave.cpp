@@ -257,6 +257,7 @@ bool GenericEcSlave::setup_from_config_file(std::string config_file)
 void GenericEcSlave::setup_interface_mapping()
 {
   for (auto & channel : pdo_channels_info_) {
+    /*
     if (channel.pdo_type == ethercat_interface::TPDO) {
       if (paramters_.find("state_interface/" + channel.interface_name) != paramters_.end()) {
         channel.interface_index =
@@ -268,6 +269,15 @@ void GenericEcSlave::setup_interface_mapping()
         channel.interface_index = std::stoi(
           paramters_["command_interface/" + channel.interface_name]);
       }
+    }
+    */
+    if (paramters_.find("state_interface/" + channel.interface_name) != paramters_.end()) {
+      channel.state_interface_index =
+        std::stoi(paramters_["state_interface/" + channel.interface_name]);
+    }
+    if (paramters_.find("command_interface/" + channel.interface_name) != paramters_.end()) {
+      channel.command_interface_index = std::stoi(
+        paramters_["command_interface/" + channel.interface_name]);
     }
 
     channel.setup_interface_ptrs(state_interface_ptr_, command_interface_ptr_);

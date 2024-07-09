@@ -118,6 +118,28 @@ public:
   void ec_update(uint8_t * domain_address)
   {
     // update state interface
+    ec_read(domain_address);
+    if (state_interface_index >= 0) {
+      state_interface_ptr_->at(state_interface_index) = last_value;
+    }
+
+    if (pdo_type == RPDO && allow_ec_write) {
+      if (command_interface_index >= 0 &&
+        !std::isnan(command_interface_ptr_->at(command_interface_index)) &&
+        !override_command)
+      {
+        ec_write(
+          domain_address, factor * command_interface_ptr_->at(
+            command_interface_index) + offset);
+      } else {
+        if (!std::isnan(default_value)) {
+          ec_write(domain_address, default_value);
+        }
+      }
+    }
+
+
+    /**
     if (pdo_type == TPDO) {
       ec_read(domain_address);
       if (interface_index >= 0) {
@@ -135,6 +157,7 @@ public:
         }
       }
     }
+    */
   }
 
   bool load_from_config(YAML::Node channel_config)
@@ -158,6 +181,7 @@ public:
       std::cerr << "channel" << index << " : missing channel data type info" << std::endl;
     }
 
+    /**
     if (pdo_type == RPDO) {
       // interface name
       if (channel_config["command_interface"]) {
@@ -173,6 +197,18 @@ public:
       if (channel_config["state_interface"]) {
         interface_name = channel_config["state_interface"].as<std::string>();
       }
+    }
+    */
+    if (channel_config["command_interface"]) {
+      interface_name = channel_config["command_interface"].as<std::string>();
+      // default value
+      if (channel_config["default"]) {
+        default_value = channel_config["default"].as<double>();
+      }
+    }
+
+    if (channel_config["state_interface"]) {
+      interface_name = channel_config["state_interface"].as<std::string>();
     }
 
     // factor
@@ -222,7 +258,8 @@ public:
   std::string interface_name;
   uint8_t data_mask = 255;
   double default_value = std::numeric_limits<double>::quiet_NaN();
-  int interface_index = -1;
+  int state_interface_index = -1;
+  int command_interface_index = -1;
   double last_value = std::numeric_limits<double>::quiet_NaN();
   bool allow_ec_write = true;
   bool override_command = false;

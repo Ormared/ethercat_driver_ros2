@@ -189,7 +189,7 @@ TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[8].interface_index, 1);
+  ASSERT_EQ(plugin_->pdo_channels_info_[8].state_interface_index, 1);
   uint8_t domain_address[2];
   EC_WRITE_S16(domain_address, 42);
   plugin_->processData(8, domain_address);
@@ -206,7 +206,7 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
   plugin_->paramters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].interface_index, 1);
+  ASSERT_EQ(plugin_->pdo_channels_info_[2].command_interface_index, 1);
   uint8_t domain_address[2];
   plugin_->processData(2, domain_address);
   ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 2 * 42 + 10);
