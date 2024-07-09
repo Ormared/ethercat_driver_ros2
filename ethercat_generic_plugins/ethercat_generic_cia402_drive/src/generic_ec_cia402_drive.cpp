@@ -104,7 +104,7 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 
 
   // CHECK FOR STATE CHANGE
-  if (index == domain_map_.size() - 1) {  // if last entry in domain
+  if (entry_idx == domain_map_.size() - 1) {  // if last entry in domain
     updateState();
   }
 }
