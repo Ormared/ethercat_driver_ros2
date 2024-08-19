@@ -53,13 +53,23 @@ EcMaster::DomainInfo::~DomainInfo()
   }
 }
 
-
-EcMaster::EcMaster(const int master)
+bool EcMaster::setMaster(const int master_id)
 {
-  master_ = ecrt_request_master(master);
+  master_ = ecrt_request_master(master_id);
   if (master_ == NULL) {
     printWarning("Failed to obtain master.");
-    return;
+    return false;
+  }
+  return true;
+}
+
+EcMaster::EcMaster(const int master, bool skip_master_init)
+{
+  if (!skip_master_init) {
+    bool ok = setMaster(master);
+    if (!ok) {
+      return;
+    }
   }
   interval_ = 0;
 }
