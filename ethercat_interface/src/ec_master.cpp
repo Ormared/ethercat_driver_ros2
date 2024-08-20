@@ -55,6 +55,10 @@ EcMaster::DomainInfo::~DomainInfo()
 
 bool EcMaster::setMaster(const int master_id)
 {
+  if (NULL != master_) {
+    ecrt_release_master(master_);
+    master_ = NULL;
+  }
   master_ = ecrt_request_master(master_id);
   if (master_ == NULL) {
     printWarning("Failed to obtain master.");
@@ -85,6 +89,9 @@ EcMaster::~EcMaster()
     if (domain.second != NULL) {
       delete domain.second;
     }
+  }
+  if (master_ != NULL) {
+    ecrt_release_master(master_);
   }
 }
 
