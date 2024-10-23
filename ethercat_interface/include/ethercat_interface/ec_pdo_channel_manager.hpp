@@ -51,7 +51,7 @@ public:
     oldState.copyfmt(std::cout);
     std::cout << "{0x" << std::hex << index << ", 0x" << (uint16_t)sub_index << ", ";
     std::cout.copyfmt(oldState);
-    std::cout << (int)type2bits(data_type) << "}," << std::endl;
+    std::cout << static_cast<int>(type2bits(data_type)) << "}," << std::endl;
 
     return {index, sub_index, type2bits(data_type)};
   }
@@ -76,6 +76,8 @@ public:
       last_value = static_cast<double>(EC_READ_S64(domain_address));
     } else if (data_type == "bool") {
       last_value = (EC_READ_U8(domain_address) & data_mask) ? 1 : 0;
+    } else if (data_type == "bit240") {
+      last_value = static_cast<double>(EC_READ_S64(domain_address));
     } else {
       last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
     }
@@ -100,6 +102,8 @@ public:
     } else if (data_type == "uint64") {
       EC_WRITE_U64(domain_address, static_cast<uint64_t>(value));
     } else if (data_type == "int64") {
+      EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
+    } else if (data_type == "bit240") {
       EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
     } else {
       buffer_ = EC_READ_U8(domain_address);
@@ -224,7 +228,7 @@ public:
       data_mask = channel_config["mask"].as<uint8_t>();
     }
 
-    //skip
+    // skip
     if (channel_config["skip"]) {
       skip = channel_config["skip"].as<bool>();
     }
