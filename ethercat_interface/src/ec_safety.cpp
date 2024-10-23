@@ -116,7 +116,7 @@ void EcSafety::printMemoryFrames(std::ostream & os)
     size_t size = ecrt_domain_size(d->domain);
     // Display the memory
     for (size_t i = 0; i < size; i++) {
-      os << std::hex << (int)d->domain_pd[i] << " ";
+      os << std::hex << static_cast<int>(d->domain_pd[i]) << " ";
     }
     os << std::endl;
   }
@@ -152,7 +152,7 @@ void EcSafety::printMemoryFrame(
       if (binary) {
         os << std::bitset<8>(pointer[i]) << " ";
       } else {
-        os << std::hex << (int)(pointer[i]) << " ";
+        os << std::hex << static_cast<int>(pointer[i]) << " ";
       }
     }
     os << std::endl;
@@ -213,9 +213,6 @@ void EcSafety::update(uint32_t domain)
   ++update_counter_;
 }
 
-uint16_t last_control_word = 0;
-uint16_t last_status_word = 0;
-
 inline std::string word2Str(uint16_t word)
 {
   std::stringstream ss;
@@ -252,19 +249,6 @@ void EcSafety::readData(uint32_t domain)
     for (int i = 0; i < entry.num_pdos; ++i) {
       (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
     }
-  }
-
-  uint16_t control_word = *(getMemoryStart(3, 0x6040, 0x00));
-  uint16_t status_word = *(getMemoryStart(3, 0x6041, 0x00));
-  if (last_control_word != control_word) {
-    std::cout << "Control word changed: " << word2Str(last_control_word) << " --> " <<
-      word2Str(control_word) << std::endl;
-    last_control_word = control_word;
-  }
-  if (last_status_word != status_word) {
-    std::cout << "Status word changed: " << word2Str(last_status_word) << " --> " <<
-      word2Str(status_word) << std::endl;
-    last_status_word = status_word;
   }
 
   ++update_counter_;
