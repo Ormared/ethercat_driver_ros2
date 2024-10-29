@@ -177,10 +177,15 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           ethercat_interface::EcPdoChannelManager channel_info;
           channel_info.pdo_type = ethercat_interface::RPDO;
           channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
-
           pdo_channels_info_.push_back(channel_info);
           all_channels_.push_back(channel_info.get_pdo_entry_info());
           all_channels_skip_list_.push_back(channel_info.skip);
+
+          // Check if the channel is a special data area holding several in memory data
+          if (slave_config["rpdo"][i]["channels"][c]["data_mapping"]) {
+            // Call the function that convert the data_mapping into pdo managed entries
+            // TODO(yguel@unistra.fr)
+          }
         }
         rpdos_.push_back(
           {

@@ -192,10 +192,15 @@ void EcSafety::update(uint32_t domain)
     checkSlaveStates();
   }
 
-  // read and write process data
+
   for (DomainInfo::Entry & entry : domain_info->entries) {
+    // read and write process data
     for (int i = 0; i < entry.num_pdos; ++i) {
       (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+    }
+    // read and write in memory data
+    for (int i = 0; i < entry.num_in_memory_data; ++i) {
+      (entry.slave)->processInMemoryData(i, domain_info->domain_pd + entry.offset_in_memory[i]);
     }
   }
 
@@ -246,8 +251,13 @@ void EcSafety::readData(uint32_t domain)
 
   // read and write process data
   for (DomainInfo::Entry & entry : domain_info->entries) {
+    // read and write process data
     for (int i = 0; i < entry.num_pdos; ++i) {
       (entry.slave)->processData(i, domain_info->domain_pd + entry.offset[i]);
+    }
+    // read and write in memory data
+    for (int i = 0; i < entry.num_in_memory_data; ++i) {
+      (entry.slave)->processInMemoryData(i, domain_info->domain_pd + entry.offset_in_memory[i]);
     }
   }
 

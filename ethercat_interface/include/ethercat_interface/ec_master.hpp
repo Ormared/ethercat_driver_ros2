@@ -147,13 +147,15 @@ protected:
      *  do not modify after active(), or may invalidate */
     std::vector<ec_pdo_entry_reg_t> domain_regs;
 
-    /** slave's pdo entries in the domain */
+    /** slave's pdo and in memory data entries in the domain */
     struct Entry
     {
       EcSlave * slave = NULL;
       int num_pdos = 0;
       uint32_t * offset = NULL;
       uint32_t * bit_position = NULL;
+      int num_in_memory_data = 0;
+      uint32_t * offset_in_memory = NULL;
     };
 
     std::vector<Entry> entries;
