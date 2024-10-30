@@ -93,16 +93,16 @@ void GenericEcSlave::setup_syncs()
 }
 
 bool GenericEcSlave::setupSlave(
-  std::unordered_map<std::string, std::string> slave_paramters,
+  std::unordered_map<std::string, std::string> slave_parameters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
 {
   state_interface_ptr_ = state_interface;
   command_interface_ptr_ = command_interface;
-  paramters_ = slave_paramters;
+  parameters_ = slave_parameters;
 
-  if (paramters_.find("slave_config") != paramters_.end()) {
-    if (!setup_from_config_file(paramters_["slave_config"])) {
+  if (parameters_.find("slave_config") != parameters_.end()) {
+    if (!setup_from_config_file(parameters_["slave_config"])) {
       return false;
     }
   } else {
@@ -264,25 +264,29 @@ void GenericEcSlave::setup_interface_mapping()
   for (auto & channel : pdo_channels_info_) {
     /*
     if (channel.pdo_type == ethercat_interface::TPDO) {
-      if (paramters_.find("state_interface/" + channel.interface_name) != paramters_.end()) {
+      if (parameters_.find("state_interface/" + channel.interface_name) != parameters_.end()) {
         channel.interface_index =
-          std::stoi(paramters_["state_interface/" + channel.interface_name]);
+          std::stoi(parameters_["state_interface/" + channel.interface_name]);
       }
     }
     if (channel.pdo_type == ethercat_interface::RPDO) {
-      if (paramters_.find("command_interface/" + channel.interface_name) != paramters_.end()) {
+      if (parameters_.find("command_interface/" + channel.interface_name) != parameters_.end()) {
         channel.interface_index = std::stoi(
-          paramters_["command_interface/" + channel.interface_name]);
+          parameters_["command_interface/" + channel.interface_name]);
       }
     }
     */
-    if (paramters_.find("state_interface/" + channel.interface_name) != paramters_.end()) {
-      channel.state_interface_index =
-        std::stoi(paramters_["state_interface/" + channel.interface_name]);
-    }
-    if (paramters_.find("command_interface/" + channel.interface_name) != paramters_.end()) {
-      channel.command_interface_index = std::stoi(
-        paramters_["command_interface/" + channel.interface_name]);
+    for (size_t i = 0; i < channel.number_of_managed_interfaces(); ++i) {
+      std::string interface = "state_interface/" + channel.interface_name(i);
+      if (parameters_.find(interface) != parameters_.end()) {
+        const size_t idx = std::stoi(parameters_[interface]);
+        channel.set_state_interface_index(channel.interface_name(i), idx);
+      }
+      interface = "command_interface/" + channel.interface_name(i);
+      if (parameters_.find(interface) != parameters_.end()) {
+        const size_t idx = std::stoi(parameters_[interface]);
+        channel.set_command_interface_index(channel.interface_name(i), idx);
+      }
     }
 
     channel.setup_interface_ptrs(state_interface_ptr_, command_interface_ptr_);

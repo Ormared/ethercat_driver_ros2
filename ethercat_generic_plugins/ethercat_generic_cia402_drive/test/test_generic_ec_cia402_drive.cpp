@@ -181,7 +181,7 @@ TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
   std::vector<double> state_interface = {0, 0};
   plugin_->state_interface_ptr_ = &state_interface;
   slave_paramters["state_interface/effort"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[8].state_interface_index, 1);
@@ -198,7 +198,7 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
   std::vector<double> command_interface = {0, 42};
   plugin_->command_interface_ptr_ = &command_interface;
   slave_paramters["command_interface/effort"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[2].command_interface_index, 1);
@@ -256,7 +256,7 @@ TEST_F(EcCiA402DriveTest, SwitchModeOfOperation)
     std::numeric_limits<double>::quiet_NaN(),
     std::numeric_limits<double>::quiet_NaN()};
   slave_paramters["command_interface/mode_of_operation"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->command_interface_ptr_ = &command_interface;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
@@ -278,7 +278,7 @@ TEST_F(EcCiA402DriveTest, EcWriteDefaultTargetPosition)
     std::numeric_limits<double>::quiet_NaN(),
     std::numeric_limits<double>::quiet_NaN()};
   slave_paramters["command_interface/mode_of_operation"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->command_interface_ptr_ = &command_interface;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();

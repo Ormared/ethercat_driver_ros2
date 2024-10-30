@@ -22,6 +22,181 @@
 namespace ethercat_interface
 {
 
+struct InterfaceDataWithAddrOffset : public InterfaceData
+{
+  InterfaceDataWithAddrOffset()
+  : InterfaceData(),
+    addr_offset(0) {}
+
+  InterfaceDataWithAddrOffset(const InterfaceData & data)
+  : InterfaceData(data),
+    addr_offset(0) {}
+
+  InterfaceDataWithAddrOffset(const InterfaceData & data, size_t addr_offset)
+  : InterfaceData(data),
+    addr_offset(offset) {}
+
+  size_t addr_offset = 0;
+  uint8_t bits = 0;
+  uint8_t data_type_idx = 0;
+};
+
+/**
+ * @brief Class to manage a PDO channel corresponding to a group of interfaces
+ */
+class EcPdoGroupInterfaceChannelManager : public EcPdoChannelManager
+{
+public:
+  EcPdoGroupInterfaceChannelManager();
+  ~EcPdoGroupInterfaceChannelManager();
+
+public:
+//=======================
+/** @name Setup methods
+   * @brief Methods to setup the PDO channel manager
+   * @{
+   */
+
+/// @brief Load the channel configuration from a YAML node
+  bool load_from_config(YAML::Node channel_config);
+
+/** @} */    // end of Setup methods
+//=======================
+
+public:
+//=======================
+/** @name Data exchange methods
+   * @brief Methods to read and write data from/to the PDO
+   * @{
+   */
+
+  /// @brief Perform an ec_read and update the state interface
+  void ec_read_to_interface(uint8_t * domain_address);
+
+  /// @brief Perform an ec_write and update the command interface
+  void ec_write_from_interface(uint8_t * domain_address);
+
+/** @} */    // < end of Data exchange methods
+//=======================
+
+public:
+  std::vector<InterfaceDataWithAddrOffset> data;
+
+public:
+  inline
+  size_t number_of_managed_interfaces() const
+  {
+    return data.size();
+  }
+
+  std::string interface_name(size_t i) const;
+
+  std::pair<bool, size_t> is_interface_managed(std::string name) const;
+
+  size_t channel_state_interface_index(const std::string & name) const;
+
+  size_t channel_command_interface_index(const std::string & name) const;
+
+public:
+  inline
+  void set_state_interface_index(const std::string & interface_name, size_t index)
+  {
+    size_t i = channel_state_interface_index(interface_name);
+    state_interface_ids_[i] = index;
+  }
+
+  inline
+  void set_command_interface_index(const std::string & interface_name, size_t index)
+  {
+    size_t i = channel_command_interface_index(interface_name);
+    command_interface_ids_[i] = index;
+  }
+
+  inline
+  bool is_interface_defined(size_t i) const
+  {
+    return std::numeric_limits<size_t>::max() != interface_ids_[i];
+  }
+
+  inline
+  bool is_state_interface_defined(size_t i) const
+  {
+    return is_interface_defined(i) && !is_command_interface_[i];
+  }
+
+  inline
+  bool is_command_interface_defined(size_t i) const
+  {
+    return is_interface_defined(i) && is_command_interface_[i];
+  }
+
+protected:
+/** @brief Create the necesary allocations to add a new interface */
+  void allocate_for_new_interface();
+
+/** @brief Add a state interface named name
+ * @details If the interface is already present, the function does nothing and
+ *  returns the index of the interface, otherwise it adds the interface and
+ *  returns its index
+ *
+ * @param[in] name the name of the interface to add
+ * @return the index for the added interface in all the vectors
+ * (state_interface_ids_, state_interface_name_ids_, read_functions_, data
+ * but also command_interface_ids_, command_interface_name_ids_,
+ * write_functions_)
+ *
+ */
+  size_t add_state_interface(const std::string & name);
+
+/** @brief Add a command interface named name
+ * @details If the interface is already present, the function does nothing and
+ * returns the index of the interface, otherwise it adds the interface and
+ * returns its index
+ *
+ * @param[in] name the name of the interface to add
+ * @return the index for the added interface in all the vectors
+ * (command_interface_ids_, command_interface_name_ids_, write_functions_, data
+ * but also state_interface_ids_, state_interface_name_ids_,
+ * read_functions_)
+ *
+ */
+  size_t add_command_interface(const std::string & name);
+
+protected:
+  /** @brief Indices of the state/or command interfaces in the ros2 control
+   * state interface or command interface vector
+   * @details If the index is not set, the value is std::numeric_limits<size_t>::max()
+   * To know which type of interface vector the index refers to, it is necessary to
+   * look into the is_command_interface_ vector.
+   */
+  std::vector<size_t> interface_ids_;
+
+  /** @brief Store a boolean indicating if the interface is a command interface
+   * or a state interface
+  */
+  std::vector<bool> is_command_interface_;
+
+  /** @brief Stores the function used to read the data from the EtherCAT
+   * frame for each interface */
+  std::vector<SingleReadFunctionType> read_functions_;
+
+  /** @brief Stores the function used to write the data to the EtherCAT
+   * frame for each interface */
+  std::vector<SingleWriteFunctionType> write_functions_;
+
+  /** @brief Stores the index to the name of the interfaces
+   * @details The index of the name of the interfaces is stored in the same
+   * order as the interfaces in the data vector. To know if the interface is
+   * a command or a state interface, it is necessary to look into the
+   * is_command_interface_ vector.
+   * If the interface is a command interface then the index refers to a name in
+   * the all_command_interface_names vector, otherwise it refers to a name in the
+   * all_state_interface_names vector.
+   * If the interface is not defined, the value is std::numeric_limits<size_t>::max()
+  */
+  std::vector<size_t> interface_name_ids_;
+
+}
 
 } // < namespace ethercat_interface
 

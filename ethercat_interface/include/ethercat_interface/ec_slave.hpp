@@ -60,13 +60,13 @@ public:
   typedef std::map<unsigned int, std::vector<unsigned int>> DomainMap;
   virtual void domains(DomainMap & /*domains*/) const {}
   virtual bool setupSlave(
-    std::unordered_map<std::string, std::string> slave_paramters,
+    std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface)
   {
     state_interface_ptr_ = state_interface;
     command_interface_ptr_ = command_interface;
-    paramters_ = slave_paramters;
+    parameters_ = slave_parameters;
     return true;
   }
 
@@ -96,7 +96,7 @@ public:
 protected:
   std::vector<double> * state_interface_ptr_;
   std::vector<double> * command_interface_ptr_;
-  std::unordered_map<std::string, std::string> paramters_;
+  std::unordered_map<std::string, std::string> parameters_;
   bool is_operational_ = false;
   bool is_alias_and_position_set_ = false;
 };

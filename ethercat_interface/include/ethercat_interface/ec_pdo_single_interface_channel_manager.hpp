@@ -25,7 +25,7 @@ namespace ethercat_interface
 /**
  * @brief Class to manage a PDO channel corresponding to a single interface
  */
-class EcPdoSingleInterfaceChannelManager : public EcPdoChannelManager
+class EcPdoSingleInterfaceChannelManager : public EcPdoChannelManager, public InterfaceData
 {
 public:
   EcPdoSingleInterfaceChannelManager();
@@ -55,7 +55,7 @@ public:
   double ec_read(uint8_t * domain_address);
 
 /// @brief Perform an ec_read and update the state interface
-  double ec_read_to_interface(uint8_t * domain_address);
+  void ec_read_to_interface(uint8_t * domain_address);
 
 /// @brief Write the value to the PDO applying data mask, factor and offset
   void ec_write(uint8_t * domain_address, double value);
@@ -63,24 +63,8 @@ public:
 /// @brief Perform an ec_write and update the command interface
   void ec_write_from_interface(uint8_t * domain_address);
 
-/// @brief Update the state and command interfaces
-  void ec_update(uint8_t * domain_address);
-
 /** @} */    // < end of Data exchange methods
 //=======================
-
-public:
-  uint8_t data_mask = 255;
-  double default_value = std::numeric_limits<double>::quiet_NaN();
-  /** last_value stores either:
-   * - the last read value modified by mask, factor and offset
-   * - the last written value modified by mask, factor and offset
-   * */
-  double last_value = std::numeric_limits<double>::quiet_NaN();
-  double factor = 1;
-  double offset = 0;
-
-  bool override_command = false;
 
 public:
   inline
@@ -92,29 +76,65 @@ public:
   inline std::string interface_name(size_t i) const
   {
     if (0 == i) {
-      return all_interface_names[interface_name_idx_];
-    } else {
-      throw std::out_of_range("EcPdoSingleInterfaceChannelManager::interface_name");
+      if (is_command_interface_defined()) {
+        return all_command_interface_names[command_interface_name_idx_];
+      } else {
+        if (is_state_interface_defined()) {
+          return all_state_interface_names[state_interface_name_idx_];
+        }
+      }
     }
+    throw std::out_of_range("EcPdoSingleInterfaceChannelManager::interface_name unknown index");
+  }
+
+  /** @brief Test if an interface named «name» is managed and returns its index among the
+   * interfaces managed by the PDO channel.
+   * @param name the name of the interface to test
+   * @return a pair with a boolean indicating if the interface is managed and the index
+   * of the interface among the interfaces managed by the PDO channel
+   */
+  std::pair<bool, size_t> is_interface_managed(std::string name) const;
+
+public:
+  inline
+  void set_state_interface_index(const std::string & /*interface_name*/, size_t index)
+  {
+    state_interface_index_ = index;
   }
 
   inline
-  bool is_interface_managed(std::string name) const
+  void set_command_interface_index(const std::string & /*interface_name*/, size_t index)
   {
-    return name == all_interface_names[interface_name_idx_];
+    command_interface_index_ = index;
   }
 
-public:
-  int state_interface_index = -1;
-  int command_interface_index = -1;
+  inline
+  bool is_state_interface_defined() const
+  {
+    return std::numeric_limits<size_t>::max() != state_interface_index_;
+  }
+
+  inline
+  bool is_command_interface_defined() const
+  {
+    return std::numeric_limits<size_t>::max() != command_interface_index_;
+  }
 
 protected:
-  SingleReadFunctionType read_function_;
-  SingleWriteFunctionType write_function_;
+  /** @brief Index of the state interface in the ros2 control state interface vector
+   * @details If the index is not set, the value is std::numeric_limits<size_t>::max()
+   */
+  size_t state_interface_index_ = std::numeric_limits<size_t>::max();
+  /** @brief Index of the command interface in the ros2 control state interface vector
+   * @details If the index is not set, the value is std::numeric_limits<size_t>::max()
+   */
+  size_t command_interface_index_ = std::numeric_limits<size_t>::max();
+  SingleReadFunctionType read_function_ = nullptr;
+  SingleWriteFunctionType write_function_ = nullptr;
   size_t state_interface_name_idx_ = 0;
   size_t command_interface_name_idx_ = 0;
 
-};
+}
 
 } // < namespace ethercat_interface
 

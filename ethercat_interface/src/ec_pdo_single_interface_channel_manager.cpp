@@ -27,11 +27,38 @@ namespace ethercat_interface
 
 
 CLASSM::EcPdoSingleInterfaceChannelManager()
+  : state_interface_index_(std::numeric_limits<size_t>::max()), ,
+  command_interface_index_(std::numeric_limits<size_t>::max()),
+  read_function_(nullptr),
+  write_function_(nullptr),
+  state_interface_name_idx_(0),
+  command_interface_name_idx_(0)
 {
 }
 
 CLASSM::~EcPdoSingleInterfaceChannelManager()
 {
+}
+
+std::pair<bool, size_t> CLASSM::is_interface_managed(std::string name) const
+{
+  if (is_command_interface_defined()) {
+    bool managed = (name == all_command_interface_names[command_interface_name_idx_]);
+    if (managed) {
+      return std::make_pair(true, 0);
+    } else {
+      return std::make_pair(false, std::numeric_limits<size_t>::max());
+    }
+  }
+  if (is_state_interface_defined()) {
+    bool managed = (name == all_state_interface_names[state_interface_name_idx_]);
+    if (managed) {
+      return std::make_pair(true, 0);
+    } else {
+      return std::make_pair(false, std::numeric_limits<size_t>::max());
+    }
+  }
+  return std::make_pair(false, std::numeric_limits<size_t>::max());
 }
 
 bool CLASSM::load_from_config(YAML::Node channel_config)
@@ -67,9 +94,9 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   }
 
   if (channel_config["command_interface"]) {
-    auto state_interface_name = channel_config["command_interface"].as<std::string>();
-    state_interface_name_idx_ = all_state_interface_names.size();
-    all_state_interface_names.push_back(state_interface_name);
+    auto command_interface_name = channel_config["command_interface"].as<std::string>();
+    command_interface_name_idx_ = all_command_interface_names.size();
+    all_command_interface_names.push_back(command_interface_name);
     // default value
     if (channel_config["default"]) {
       default_value = channel_config["default"].as<double>();
@@ -77,9 +104,9 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   }
 
   if (channel_config["state_interface"]) {
-    auto command_interface_name = channel_config["state_interface"].as<std::string>();
-    command_interface_name_idx_ = all_command_interface_names.size();
-    all_command_interface_names.push_back(command_interface_name);
+    auto state_interface_name = channel_config["state_interface"].as<std::string>();
+    state_interface_name_idx_ = all_state_interface_names.size();
+    all_state_interface_names.push_back(state_interface_name);
   }
 
   // factor
@@ -92,7 +119,7 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   }
   // mask
   if (channel_config["mask"]) {
-    data_mask = channel_config["mask"].as<uint8_t>();
+    mask = channel_config["mask"].as<uint8_t>();
   }
 
   //skip
@@ -105,21 +132,20 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
 
 double CLASSM::ec_read(uint8_t * domain_address)
 {
-  last_value = read_function_(domain_address, data_mask);
+  last_value = read_function_(domain_address, mask);
   last_value = factor * last_value + offset;
-  if (state_interface_index >= 0) {
-    state_interface_ptr_->at(state_interface_index) = last_value;
+  if (is_state_interface_defined() ) {
+    state_interface_ptr_->at(state_interface_index_) = last_value;
   }
   return last_value;
 }
 
-double CLASSM::ec_read_to_interface(uint8_t * domain_address)
+void CLASSM::ec_read_to_interface(uint8_t * domain_address)
 {
   ec_read(domain_address);
-  if (state_interface_index >= 0) {
-    state_interface_ptr_->at(state_interface_index) = last_value;
+  if (is_state_interface_defined() ) {
+    state_interface_ptr_->at(state_interface_index_) = last_value;
   }
-  return last_value;
 }
 
 void CLASSM::ec_write(uint8_t * domain_address, double value)
@@ -130,12 +156,12 @@ void CLASSM::ec_write(uint8_t * domain_address, double value)
 
   if (!std::isnan(default_value) && !override_command) {
     last_value = factor * value + offset;
-    write_function_(domain_address, last_value, data_mask);
+    write_function_(domain_address, last_value, mask);
   } else {
     if (!std::isnan(default_value)) {
       last_value = default_value;
-      write_function_(domain_address, last_value, data_mask);
-    } else {// Do nothing
+      write_function_(domain_address, last_value, mask);
+    } else {  // Do nothing
       return;
     }
   }
@@ -143,21 +169,15 @@ void CLASSM::ec_write(uint8_t * domain_address, double value)
 
 void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 {
-  if (command_interface_index >= 0) {
+  if (is_command_interface_defined() ) {
     const auto value = command_interface_ptr_->at(command_interface_index);
     ec_write(domain_address, value);
   } else {
     if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(default_value)) {
       last_value = default_value;
-      write_function_(domain_address, last_value, data_mask);
+      write_function_(domain_address, last_value, mask);
     }
   }
-}
-
-void CLASSM::ec_update(uint8_t * domain_address)
-{
-  ec_read_to_interface(domain_address);
-  ec_write_from_interface(domain_address);
 }
 
 

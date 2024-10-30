@@ -116,10 +116,10 @@ bool EcCiA402Drive::setupSlave(
 {
   state_interface_ptr_ = state_interface;
   command_interface_ptr_ = command_interface;
-  paramters_ = slave_paramters;
+  parameters_ = slave_parameters;
 
-  if (paramters_.find("slave_config") != paramters_.end()) {
-    if (!setup_from_config_file(paramters_["slave_config"])) {
+  if (parameters_.find("slave_config") != parameters_.end()) {
+    if (!setup_from_config_file(parameters_["slave_config"])) {
       return false;
     }
   } else {
@@ -130,12 +130,12 @@ bool EcCiA402Drive::setupSlave(
   setup_interface_mapping();
   setup_syncs();
 
-  if (paramters_.find("mode_of_operation") != paramters_.end()) {
-    mode_of_operation_ = std::stod(paramters_["mode_of_operation"]);
+  if (parameters_.find("mode_of_operation") != parameters_.end()) {
+    mode_of_operation_ = std::stod(parameters_["mode_of_operation"]);
   }
 
-  if (paramters_.find("command_interface/reset_fault") != paramters_.end()) {
-    fault_reset_command_interface_index_ = std::stoi(paramters_["command_interface/reset_fault"]);
+  if (parameters_.find("command_interface/reset_fault") != parameters_.end()) {
+    fault_reset_command_interface_index_ = std::stoi(parameters_["command_interface/reset_fault"]);
   }
 
   return true;

@@ -29,8 +29,8 @@ namespace ethercat_interface
 
 enum PdoType
 {
-  RPDO = 0, //< Receive PDO, Master out to Slave in (MoSi)
-  TPDO = 1 //< Transmit PDO, Master in from Slave out (MiSo)
+  RPDO = 0, // < Receive PDO, Master out to Slave in (MoSi)
+  TPDO = 1 // < Transmit PDO, Master in from Slave out (MiSo)
 };
 
 /** @brief Global table that stores all the names of the known types */
@@ -65,6 +65,23 @@ typedef void SingleWriteFunctionType(uint8_t * domain_address, double value, uin
 /** @brief Global table that stores each write function associated with a data type */
 extern const SingleWriteFunctionType ec_pdo_single_write_functions[];
 
+struct InterfaceData
+{
+  bool override_command = false;
+  uint8_t mask = 255;
+  double default_value = std::numeric_limits<double>::quiet_NaN();
+  /** last_value stores either:
+   * - the last read value modified by mask, factor and offset
+   * - the last written value modified by mask, factor and offset
+   * */
+  double last_value = std::numeric_limits<double>::quiet_NaN();
+  double factor = 1;
+  double offset = 0;
+
+  uint8_t data_type_idx = 0;
+  uint8_t bits = 0;
+};
+
 
 /**
  * @brief Virtual class for managing a single PDO channel
@@ -76,7 +93,7 @@ extern const SingleWriteFunctionType ec_pdo_single_write_functions[];
  * The most common case is the single interface case, where the PDO corresponds
  * to a single interface. It is less common to have a group of interfaces,
  * but it is still possible and useful (see the example below).
- * @example Single inteface example: a joint position PDO.
+ * @example Single interface example: a joint position PDO.
  * The channel manager will read the joint position from the PDO and write the
  * joint position to the PDO. The joint position will be updated in the state
  * interface, and the joint position will be read from the command interface.
@@ -126,20 +143,14 @@ public:
    * @{
    */
 
-  /// @brief Read the data from the PDO applying data mask, factor and offset
-  virtual double ec_read(uint8_t * domain_address) = 0;
-
   /// @brief Perform an ec_read and update the state interface
-  virtual double ec_read_to_interface(uint8_t * domain_address) = 0;
-
-  /// @brief Write the value to the PDO applying data mask, factor and offset
-  virtual void ec_write(uint8_t * domain_address, double value) = 0;
+  virtual void ec_read_to_interface(uint8_t * domain_address) = 0;
 
   /// @brief Perform an ec_write and update the command interface
   virtual void ec_write_from_interface(uint8_t * domain_address) = 0;
 
   /// @brief Update the state and command interfaces
-  virtual void ec_update(uint8_t * domain_address) = 0;
+  virtual void ec_update(uint8_t * domain_address);
 
 /** @} */    // < end of Data exchange methods
 //=======================
@@ -163,9 +174,11 @@ public:
   bool skip = false;// < Skip the PDO channel in ? TODO(@yguel@unistra.fr)
 
 public:
-  size_t number_of_managed_interfaces() const = 0;
-  std::string interface_name(size_t i) const = 0;
-  bool is_interface_managed(std::string interface_name) const = 0;
+  virtual size_t number_of_managed_interfaces() const = 0;
+  virtual std::string interface_name(size_t i) const = 0;
+  virtual std::pair<bool, size_t> is_interface_managed(std::string interface_name) const = 0;
+  virtual void set_state_interface_index(const std::string & interface_name, size_t index) = 0;
+  virtual void set_command_interface_index(const std::string & interface_name, size_t index) = 0;
 
 protected:
   uint8_t bits_;// < Number of bits declared in the PDO

@@ -119,6 +119,12 @@ void CLASSM::setup_interface_ptrs(
   state_interface_ptr_ = state_interface;
 }
 
+void CLASSM::ec_update(uint8_t * domain_address)
+{
+  ec_read_to_interface(domain_address);
+  ec_write_from_interface(domain_address);
+}
+
 
 #undef CLASSM
 

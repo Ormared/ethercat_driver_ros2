@@ -186,7 +186,7 @@ TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
   std::vector<double> state_interface = {0, 0};
   plugin_->state_interface_ptr_ = &state_interface;
   slave_paramters["state_interface/effort"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[8].state_interface_index, 1);
@@ -203,7 +203,7 @@ TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
   std::vector<double> command_interface = {0, 42};
   plugin_->command_interface_ptr_ = &command_interface;
   slave_paramters["command_interface/effort"] = "1";
-  plugin_->paramters_ = slave_paramters;
+  plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[2].command_interface_index, 1);
