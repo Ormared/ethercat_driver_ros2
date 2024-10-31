@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <yaml-cpp/yaml.h>
+#include <stdexcept>
 
 namespace ethercat_interface
 {
@@ -43,7 +45,10 @@ extern const std::vector<uint8_t> ec_pdo_channel_data_bits;
 size_t typeIdx(const std::string & type);
 
 /** @brief Returns the number of bits associated with a data type */
-uint8_t type2bits(const std::string type);
+uint8_t type2bits(const std::string & type);
+
+/** @brief Returns the type name */
+std::string id_and_bits_to_type(size_t i, uint8_t bits);
 
 /** @brief Global table that stores all the names of the recorded state interfaces */
 extern std::vector<std::string> all_state_interface_names;
@@ -53,14 +58,14 @@ extern std::vector<std::string> all_command_interface_names;
 
 /** @brief The type of the functions used to read from EtherCAT frame and return a double
  * to be compatible with a ROS2 control state interface */
-typedef double SingleReadFunctionType(uint8_t * domain_address, uint8_t data_mask);
+typedef double (* SingleReadFunctionType)(uint8_t * domain_address, uint8_t data_mask);
 
 /** @brief Global table that stores each read function associated with a data type */
 extern const SingleReadFunctionType ec_pdo_single_read_functions[];
 
 /** @brief The type of the functions used to write to EtherCAT frame from a double
  * to be compatible with a ROS2 control command interface */
-typedef void SingleWriteFunctionType(uint8_t * domain_address, double value, uint8_t data_mask);
+typedef void (* SingleWriteFunctionType)(uint8_t * domain_address, double value, uint8_t data_mask);
 
 /** @brief Global table that stores each write function associated with a data type */
 extern const SingleWriteFunctionType ec_pdo_single_write_functions[];
@@ -77,9 +82,6 @@ struct InterfaceData
   double last_value = std::numeric_limits<double>::quiet_NaN();
   double factor = 1;
   double offset = 0;
-
-  uint8_t data_type_idx = 0;
-  uint8_t bits = 0;
 };
 
 
@@ -142,9 +144,12 @@ public:
    * @brief Methods to read and write data from/to the PDO
    * @{
    */
+  virtual double ec_read(uint8_t * domain_address, size_t i = 0) = 0;
 
   /// @brief Perform an ec_read and update the state interface
   virtual void ec_read_to_interface(uint8_t * domain_address) = 0;
+
+  virtual void ec_write(uint8_t * domain_address, double value, size_t i = 0) = 0;
 
   /// @brief Perform an ec_write and update the command interface
   virtual void ec_write_from_interface(uint8_t * domain_address) = 0;
@@ -163,10 +168,27 @@ public:
   PdoType pdo_type;
   uint16_t index;
   uint8_t sub_index;
+
   /** @brief Get the number of bits in the PDO */
-  inline uint8_t bits() const {return bits_;}
+  inline uint8_t pdo_bits() const {return bits_;}
+
   /** @brief Get the string describing the data type of the PDO */
-  std::string data_type() const;
+  inline
+  std::string pdo_data_type() const
+  {
+    return id_and_bits_to_type(data_type_idx_, bits_);
+  }
+
+  /** @brief Get the string describing the type of the data associated with interface i
+   * @param i The index of the interface in the group of interfaces managed by the PDO channel. In case of a single interface, i must be 0.
+  */
+  virtual std::string data_type(size_t i = 0) const = 0;
+
+  /** @brief Get the data */
+  InterfaceData & data(size_t i = 0);
+
+  /** @brief Get the data */
+  const InterfaceData & data(size_t i = 0) const;
 
   bool allow_ec_write = true;// < Is the PDO channel writable ?
 
@@ -175,10 +197,12 @@ public:
 
 public:
   virtual size_t number_of_managed_interfaces() const = 0;
-  virtual std::string interface_name(size_t i) const = 0;
+  virtual std::string interface_name(size_t i = 0) const = 0;
   virtual std::pair<bool, size_t> is_interface_managed(std::string interface_name) const = 0;
   virtual void set_state_interface_index(const std::string & interface_name, size_t index) = 0;
   virtual void set_command_interface_index(const std::string & interface_name, size_t index) = 0;
+  virtual size_t state_interface_index(size_t i = 0) const = 0;
+  virtual size_t command_interface_index(size_t i = 0) const = 0;
 
 protected:
   uint8_t bits_;// < Number of bits declared in the PDO

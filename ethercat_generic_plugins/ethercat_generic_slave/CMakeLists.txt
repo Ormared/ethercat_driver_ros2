@@ -65,13 +65,13 @@ if(BUILD_TESTING)
     test_generic_ec_slave
     test/test_generic_ec_slave.cpp
   )
-  target_include_directories(test_generic_ec_slave PRIVATE include)
-  target_link_libraries(test_generic_ec_slave
-    ${PROJECT_NAME}
-  )
   ament_target_dependencies(test_generic_ec_slave
     pluginlib
     ethercat_interface
+  )
+  target_include_directories(test_generic_ec_slave PRIVATE include)
+  target_link_libraries(test_generic_ec_slave
+    ${PROJECT_NAME}
   )
 endif()
 

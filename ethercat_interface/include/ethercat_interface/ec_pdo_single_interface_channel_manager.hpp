@@ -38,7 +38,7 @@ public:
    * @{
    */
 
-/// @brief Load the channel configuration from a YAML node
+  /// @brief Load the channel configuration from a YAML node
   bool load_from_config(YAML::Node channel_config);
 
 /** @} */    // end of Setup methods
@@ -51,16 +51,16 @@ public:
    * @{
    */
 
-/// @brief Read the data from the PDO applying data mask, factor and offset
-  double ec_read(uint8_t * domain_address);
+  /// @brief Read the data from the PDO applying data mask, factor and offset
+  double ec_read(uint8_t * domain_address, size_t i = 0);
 
-/// @brief Perform an ec_read and update the state interface
+  /// @brief Perform an ec_read and update the state interface
   void ec_read_to_interface(uint8_t * domain_address);
 
-/// @brief Write the value to the PDO applying data mask, factor and offset
-  void ec_write(uint8_t * domain_address, double value);
+  /// @brief Write the value to the PDO applying data mask, factor and offset
+  void ec_write(uint8_t * domain_address, double value, size_t i = 0);
 
-/// @brief Perform an ec_write and update the command interface
+  /// @brief Perform an ec_write and update the command interface
   void ec_write_from_interface(uint8_t * domain_address);
 
 /** @} */    // < end of Data exchange methods
@@ -73,7 +73,7 @@ public:
     return 1;
   }
 
-  inline std::string interface_name(size_t i) const
+  inline std::string interface_name(size_t i = 0) const
   {
     if (0 == i) {
       if (is_command_interface_defined()) {
@@ -84,7 +84,21 @@ public:
         }
       }
     }
-    throw std::out_of_range("EcPdoSingleInterfaceChannelManager::interface_name unknown index");
+    throw std::out_of_range(
+            "EcPdoSingleInterfaceChannelManager::interface_name unknown interface index : must be 0 (instead of " + std::to_string(
+              i) + ")");
+  }
+
+  inline
+  std::string data_type(size_t i = 0) const
+  {
+    if (0 == i) {
+      return id_and_bits_to_type(data_type_idx_, bits_);
+    } else {
+      throw std::out_of_range(
+              "EcPdoSingleInterfaceChannelManager::data_type unknown interface index : must be 0 (instead of " + std::to_string(
+                i) + ")");
+    }
   }
 
   /** @brief Test if an interface named «name» is managed and returns its index among the
@@ -120,6 +134,37 @@ public:
     return std::numeric_limits<size_t>::max() != command_interface_index_;
   }
 
+  inline size_t state_interface_index(size_t /*i*/) const
+  {
+    return state_interface_index_;
+  }
+
+  inline size_t command_interface_index(size_t /*i*/) const
+  {
+    return command_interface_index_;
+  }
+
+public:
+  inline InterfaceData & data(size_t i = 0)
+  {
+    if (0 == i) {
+      return *this;
+    }
+    throw std::out_of_range(
+            "EcPdoSingleInterfaceChannelManager::data unknown interface index : must be 0 (instead of " + std::to_string(
+              i) + ")");
+  }
+
+  inline const InterfaceData & data(size_t i = 0) const
+  {
+    if (0 == i) {
+      return *this;
+    }
+    throw std::out_of_range(
+            "EcPdoSingleInterfaceChannelManager::data unknown interface index : must be 0 (instead of " + std::to_string(
+              i) + ")");
+  }
+
 protected:
   /** @brief Index of the state interface in the ros2 control state interface vector
    * @details If the index is not set, the value is std::numeric_limits<size_t>::max()
@@ -134,7 +179,7 @@ protected:
   size_t state_interface_name_idx_ = 0;
   size_t command_interface_name_idx_ = 0;
 
-}
+};
 
 } // < namespace ethercat_interface
 

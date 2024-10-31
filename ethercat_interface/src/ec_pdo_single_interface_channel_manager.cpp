@@ -15,6 +15,7 @@
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
 #include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
+#include <iostream>
 
 namespace ethercat_interface
 {
@@ -27,7 +28,7 @@ namespace ethercat_interface
 
 
 CLASSM::EcPdoSingleInterfaceChannelManager()
-  : state_interface_index_(std::numeric_limits<size_t>::max()), ,
+  : state_interface_index_(std::numeric_limits<size_t>::max()),
   command_interface_index_(std::numeric_limits<size_t>::max()),
   read_function_(nullptr),
   write_function_(nullptr),
@@ -130,7 +131,7 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   return true;
 }
 
-double CLASSM::ec_read(uint8_t * domain_address)
+double CLASSM::ec_read(uint8_t * domain_address, size_t /*i*/)
 {
   last_value = read_function_(domain_address, mask);
   last_value = factor * last_value + offset;
@@ -148,13 +149,13 @@ void CLASSM::ec_read_to_interface(uint8_t * domain_address)
   }
 }
 
-void CLASSM::ec_write(uint8_t * domain_address, double value)
+void CLASSM::ec_write(uint8_t * domain_address, double value, size_t /*i*/)
 {
   if (RPDO != pdo_type || !allow_ec_write) {
     return;
   }
 
-  if (!std::isnan(default_value) && !override_command) {
+  if (!std::isnan(value) && !override_command) {
     last_value = factor * value + offset;
     write_function_(domain_address, last_value, mask);
   } else {
@@ -170,7 +171,7 @@ void CLASSM::ec_write(uint8_t * domain_address, double value)
 void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 {
   if (is_command_interface_defined() ) {
-    const auto value = command_interface_ptr_->at(command_interface_index);
+    const auto value = command_interface_ptr_->at(command_interface_index_);
     ec_write(domain_address, value);
   } else {
     if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(default_value)) {
@@ -179,7 +180,6 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
     }
   }
 }
-
 
 #undef CLASSM
 

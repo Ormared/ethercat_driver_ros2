@@ -14,6 +14,7 @@
 //
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
+#include <iostream>
 #include "ethercat_interface/ec_pdo_group_interface_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -35,31 +36,49 @@ CLASSM::~EcPdoGroupInterfaceChannelManager()
 
 std::string CLASSM::interface_name(size_t i) const
 {
-  if (data.size() > i) {
+  if (v_data.size() > i) {
     if (is_interface_defined(i) ) {
-      if (is_command_interface_(i)) {
+      if (is_command_interface_[i]) {
         return all_command_interface_names[interface_name_ids_[i]];
       } else {
         return all_state_interface_names[interface_name_ids_[i]];
       }
+    } else {
+      return "null";
     }
   }
-  throw std::out_of_range("EcPdoSingleInterfaceChannelManager::interface_name unknown index");
+  throw std::out_of_range(
+          "EcPdoGroupInterfaceChannelManager::interface_name unknown interface index : must be < " + std::to_string(
+            v_data.size()) + "(instead of " + std::to_string(
+            i) + ")");
+}
+
+std::string CLASSM::data_type(size_t i) const
+{
+  if (v_data.size() > i) {
+    const InterfaceDataWithAddrOffset & d = v_data[i];
+    return id_and_bits_to_type(d.data_type_idx, d.bits);
+  } else {
+    throw std::out_of_range(
+            "EcPdoGroupInterfaceChannelManager::data_type unknown interface index : must be < " + std::to_string(
+              v_data.size()) + " (instead of " + std::to_string(
+              i) + ") ");
+  }
 }
 
 std::pair<bool, size_t> CLASSM::is_interface_managed(std::string name) const
 {
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (size_t i = 0; i < v_data.size(); ++i) {
     if (name == interface_name(i)) {
-      return std::make_pair<true, i>;
+      return std::make_pair(true, i);
     }
   }
-  return std::make_pair<false, std::numeric_limits<size_t>::max()>;   // not found
+  return std::make_pair(false, std::numeric_limits<size_t>::max());   // not found
 }
 
 size_t CLASSM::channel_state_interface_index(const std::string & name) const
 {
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (size_t i = 0; i < v_data.size(); ++i) {
     if (is_state_interface_defined(i)) {
       if (name == all_state_interface_names[interface_name_ids_[i]]) {
         return i;
@@ -72,7 +91,7 @@ size_t CLASSM::channel_state_interface_index(const std::string & name) const
 
 size_t CLASSM::channel_command_interface_index(const std::string & name) const
 {
-  for (size_t i = 0; i < data.size(); ++i) {
+  for (size_t i = 0; i < v_data.size(); ++i) {
     if (is_command_interface_defined(i)) {
       if (name == all_command_interface_names[interface_name_ids_[i]]) {
         return i;
@@ -83,9 +102,39 @@ size_t CLASSM::channel_command_interface_index(const std::string & name) const
           "EcPdoSingleInterfaceChannelManager::interface_name unknown index for command interface");
 }
 
+size_t CLASSM::state_interface_index(size_t i) const
+{
+  if (v_data.size() > i) {
+    if (!is_command_interface_[i]) {
+      return interface_ids_[i];
+    } else {
+      return std::numeric_limits<size_t>::max();
+    }
+  }
+  throw std::out_of_range(
+          "EcPdoGroupInterfaceChannelManager::state_interface_index unknown interface index : must be < " + std::to_string(
+            v_data.size()) + "(instead of " + std::to_string(
+            i) + ")");
+}
+
+size_t CLASSM::command_interface_index(size_t i) const
+{
+  if (v_data.size() > i) {
+    if (is_command_interface_[i]) {
+      return interface_ids_[i];
+    } else {
+      return std::numeric_limits<size_t>::max();
+    }
+  }
+  throw std::out_of_range(
+          "EcPdoGroupInterfaceChannelManager::command_interface_index unknown interface index : must be < " + std::to_string(
+            v_data.size()) + "(instead of " + std::to_string(
+            i) + ")");
+}
+
 void CLASSM::allocate_for_new_interface()
 {
-  data.push_back(InterfaceDataWithAddrOffset());
+  v_data.push_back(InterfaceDataWithAddrOffset());
   interface_ids_.push_back(std::numeric_limits<size_t>::max());
   is_command_interface_.push_back(false);
   read_functions_.push_back(nullptr);
@@ -102,7 +151,7 @@ size_t CLASSM::add_command_interface(const std::string & name)
 
   // Add the interface
   // Stores the index of the interface in all the vectors
-  size_t id = data.size();
+  size_t id = v_data.size();
   // Resize all the vectors
   allocate_for_new_interface();
   is_command_interface_[id] = true;
@@ -111,6 +160,15 @@ size_t CLASSM::add_command_interface(const std::string & name)
   all_command_interface_names.push_back(name);
   interface_name_ids_.push_back(name_idx);
 
+  return id;
+}
+
+size_t CLASSM::add_data_without_interface()
+{
+  size_t id = v_data.size();
+  allocate_for_new_interface();
+  is_command_interface_[id] = false;
+  interface_name_ids_.push_back(std::numeric_limits<size_t>::max());
   return id;
 }
 
@@ -124,7 +182,7 @@ size_t CLASSM::add_state_interface(const std::string & name)
 
   // Add the interface
   // Stores the index of the interface in all the vectors
-  size_t id = data.size();
+  size_t id = v_data.size();
   // Resize all the vectors
   allocate_for_new_interface();
   is_command_interface_[id] = false;
@@ -175,36 +233,39 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   if (channel_config["state_interface"]) {
     auto state_interface_name = channel_config["state_interface"].as<std::string>();
     id = add_state_interface(state_interface_name);
-    data[id].data_type_idx = data_type_idx_;
-    data[id].bits = bits_;
-    read_functions_[id] = ec_pdo_single_read_functions[data_type_idx];
+  } else {
+    id = add_data_without_interface();
   }
+
+  v_data[id].data_type_idx = data_type_idx_;
+  v_data[id].bits = bits_;
+  read_functions_[id] = ec_pdo_single_read_functions[v_data[id].data_type_idx];
 
   // factor
   if (channel_config["factor"]) {
     if (id != std::numeric_limits<size_t>::max()) {
-      data[id].factor = channel_config["factor"].as<double>();
+      v_data[id].factor = channel_config["factor"].as<double>();
     } else {
-      //Ignored
-      // TODO(yguel@unistra.fr: log warning)
+      // Error
+      // TODO(yguel@unistra.fr: log error)
     }
   }
   // offset
   if (channel_config["offset"]) {
     if (id != std::numeric_limits<size_t>::max()) {
-      data[id].offset = channel_config["offset"].as<double>();
+      v_data[id].offset = channel_config["offset"].as<double>();
     } else {
-      //Ignored
-      // TODO(yguel@unistra.fr: log warning)
+      // Error
+      // TODO(yguel@unistra.fr: log error)
     }
   }
   // mask
   if (channel_config["mask"]) {
     if (id != std::numeric_limits<size_t>::max()) {
-      data[id].mask = channel_config["mask"].as<uint8_t>();
+      v_data[id].mask = channel_config["mask"].as<uint8_t>();
     } else {
-      //Ignored
-      // TODO(yguel@unistra: log warning)
+      // Error
+      // TODO(yguel@unistra: log error)
     }
   }
 
@@ -224,7 +285,7 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
         auto command_interface_name = map["command_interface"].as<std::string>();
         id = add_command_interface(command_interface_name);
         if (map["default_value"]) {
-          data[id].default_value = map["default_value"].as<double>();
+          v_data[id].default_value = map["default_value"].as<double>();
         }
       }
 
@@ -234,39 +295,38 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
       }
 
       if (std::numeric_limits<size_t>::max() == id) {
-        // Skip the rest of the loop instructions since no interface is defined
-        continue;
+        id = add_data_without_interface();
       }
 
       if (map["addr_offset"]) {
-        data[id].addr_offset = map["addr_offset"].as<size_t>();
+        v_data[id].addr_offset = map["addr_offset"].as<size_t>();
       }
       if (map["type"]) {
         std::string data_type = map["type"].as<std::string>();
         auto type_idx = typeIdx(data_type);
-        data[id].data_type_idx = type_idx;
-        if (0 == data[id].data_type_idx) {
+        v_data[id].data_type_idx = type_idx;
+        if (0 == v_data[id].data_type_idx) {
           std::cerr << "channel" << index << " : unknown data type " << data_type << std::endl;
           return false;
         }
-        data[id].bits = type2bits(data_type);
+        v_data[id].bits = type2bits(data_type);
         read_functions_[id] = ec_pdo_single_read_functions[type_idx];
         write_functions_[id] = ec_pdo_single_write_functions[type_idx];
       }
 
       // factor
       if (map["factor"]) {
-        data[id].factor = map["factor"].as<double>();
+        v_data[id].factor = map["factor"].as<double>();
       }
 
       // offset
       if (map["offset"]) {
-        data[id].offset = map["offset"].as<double>();
+        v_data[id].offset = map["offset"].as<double>();
       }
 
       // mask
       if (map["mask"]) {
-        data[id].mask = map["mask"].as<uint8_t>();
+        v_data[id].mask = map["mask"].as<uint8_t>();
       }
 
     }
@@ -275,40 +335,43 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   return true;
 }
 
-double CLASSM::ec_read(size_t i, uint8_t * domain_address)
+double CLASSM::ec_read(uint8_t * domain_address, size_t i)
 {
-  double last_value = read_functions_[i](domain_address + data[i].addr_offset, data[i].mask);
-  data[i].last_value = data[i].factor * last_value + data[i].offset;
+  InterfaceDataWithAddrOffset & d = v_data[i];
+  double last_value = read_functions_[i](domain_address + d.addr_offset, d.mask);
+  last_value = d.factor * last_value + d.offset;
   if (is_state_interface_defined(i) ) {
-    state_interface_ptr_->at(state_interface_ids_[i]) = data[i].last_value;
+    state_interface_ptr_->at(interface_ids_[i]) = last_value;
   }
-  return data[i].last_value;
+  d.last_value = last_value;
+  return last_value;
 }
 
 void CLASSM::ec_read_to_interface(uint8_t * domain_address)
 {
-  for (size_t i = 0; i < data.size(); ++i) {
-    ec_read(i, domain_address);
+  for (size_t i = 0; i < v_data.size(); ++i) {
+    ec_read(domain_address, i);
     if (is_state_interface_defined(i) ) {
-      state_interface_ptr_->at(state_interface_index_) = last_value;
+      state_interface_ptr_->at(interface_ids_[i]) = v_data[i].last_value;
     }
   }
 }
 
-void CLASSM::ec_write(size_t i, uint8_t * domain_address, double value)
+void CLASSM::ec_write(uint8_t * domain_address, double value, size_t i)
 {
-  ///////////////////// TODO: Implement this function /////////////////////
   if (RPDO != pdo_type || !allow_ec_write) {
     return;
   }
 
-  if (!std::isnan(default_value) && !override_command) {
-    last_value = factor * value + offset;
-    write_function_(domain_address, last_value, mask);
+  InterfaceDataWithAddrOffset & d = v_data[i];
+
+  if (!std::isnan(value) && !d.override_command) {
+    d.last_value = d.factor * value + d.offset;
+    write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
   } else {
-    if (!std::isnan(default_value)) {
-      last_value = default_value;
-      write_function_(domain_address, last_value, mask);
+    if (!std::isnan(d.default_value)) {
+      d.last_value = d.default_value;
+      write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
     } else {  // Do nothing
       return;
     }
@@ -317,16 +380,20 @@ void CLASSM::ec_write(size_t i, uint8_t * domain_address, double value)
 
 void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 {
-  ///////////////////// TODO: Implement this function /////////////////////
-  if (is_command_interface_defined() ) {
-    const auto value = command_interface_ptr_->at(command_interface_index);
-    ec_write(domain_address, value);
-  } else {
-    if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(default_value)) {
-      last_value = default_value;
-      write_function_(domain_address, last_value, mask);
+  for (size_t i = 0; i < v_data.size(); ++i) {
+    if (is_command_interface_defined(i) ) {
+      const auto value = command_interface_ptr_->at(interface_ids_[i]);
+      ec_write(domain_address, value, i);
+    } else {
+      auto & d = v_data[i];
+      if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(d.default_value)) {
+        d.last_value = d.default_value;
+        write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
+      }
     }
   }
 }
 
 #undef CLASSM
+
+} // < namespace ethercat_interface

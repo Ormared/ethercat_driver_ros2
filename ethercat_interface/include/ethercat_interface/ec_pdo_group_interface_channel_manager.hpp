@@ -17,6 +17,7 @@
 #ifndef ETHERRAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
 #define ETHERRAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
 
+#include <utility>  // for std::pair
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -34,7 +35,7 @@ struct InterfaceDataWithAddrOffset : public InterfaceData
 
   InterfaceDataWithAddrOffset(const InterfaceData & data, size_t addr_offset)
   : InterfaceData(data),
-    addr_offset(offset) {}
+    addr_offset(addr_offset) {}
 
   size_t addr_offset = 0;
   uint8_t bits = 0;
@@ -70,8 +71,22 @@ public:
    * @{
    */
 
+  /** @brief Read the data from the PDO applying data mask, factor and offset
+   * @param i The index of the interface to read
+   * @param domain_address The pdo start address in the domain to read from, the read address will be domain_address + v_data[i].addr_offset
+   * @returns The value read from the domain
+   */
+  double ec_read(uint8_t * domain_address, size_t i = 0);
+
   /// @brief Perform an ec_read and update the state interface
   void ec_read_to_interface(uint8_t * domain_address);
+
+  /** @brief Write the value to the PDO applying data mask, factor and offset
+   * @param i The index of the interface to write
+   * @param domain_address The pdo start address in the domain to write into, the write address will be domain_address + v_data[i].addr_offset
+   * @param value The value to write
+   */
+  void ec_write(uint8_t * domain_address, double value, size_t i = 0);
 
   /// @brief Perform an ec_write and update the command interface
   void ec_write_from_interface(uint8_t * domain_address);
@@ -80,16 +95,16 @@ public:
 //=======================
 
 public:
-  std::vector<InterfaceDataWithAddrOffset> data;
+  std::vector<InterfaceDataWithAddrOffset> v_data;
 
 public:
   inline
   size_t number_of_managed_interfaces() const
   {
-    return data.size();
+    return v_data.size();
   }
 
-  std::string interface_name(size_t i) const;
+  std::string interface_name(size_t i = 0) const;
 
   std::pair<bool, size_t> is_interface_managed(std::string name) const;
 
@@ -97,19 +112,24 @@ public:
 
   size_t channel_command_interface_index(const std::string & name) const;
 
+  std::string data_type(size_t i = 0) const;
+
+  size_t state_interface_index(size_t i = 0) const;
+  size_t command_interface_index(size_t i = 0) const;
+
 public:
   inline
   void set_state_interface_index(const std::string & interface_name, size_t index)
   {
     size_t i = channel_state_interface_index(interface_name);
-    state_interface_ids_[i] = index;
+    interface_ids_[i] = index;
   }
 
   inline
   void set_command_interface_index(const std::string & interface_name, size_t index)
   {
     size_t i = channel_command_interface_index(interface_name);
-    command_interface_ids_[i] = index;
+    interface_ids_[i] = index;
   }
 
   inline
@@ -130,6 +150,21 @@ public:
     return is_interface_defined(i) && is_command_interface_[i];
   }
 
+public:
+
+public:
+  inline
+  InterfaceData & data(size_t i = 0)
+  {
+    return v_data.at(i);
+  }
+
+  inline
+  const InterfaceData & data(size_t i = 0) const
+  {
+    return v_data.at(i);
+  }
+
 protected:
 /** @brief Create the necesary allocations to add a new interface */
   void allocate_for_new_interface();
@@ -140,13 +175,20 @@ protected:
  *  returns its index
  *
  * @param[in] name the name of the interface to add
- * @return the index for the added interface in all the vectors
- * (state_interface_ids_, state_interface_name_ids_, read_functions_, data
- * but also command_interface_ids_, command_interface_name_ids_,
+ * @returns the index for the added interface in all the vectors
+ * (interface_ids_, interface_name_ids_, read_functions_, data,
  * write_functions_)
  *
  */
   size_t add_state_interface(const std::string & name);
+
+/** @brief Add a data without interface
+ * @details The function adds a data without interface and returns the index
+ * of the data in all the vectors (interface_ids_, interface_name_ids_,
+ * read_functions_, data, write_functions_)
+ * @returns the index for the added data in all the vectors
+ */
+  size_t add_data_without_interface();
 
 /** @brief Add a command interface named name
  * @details If the interface is already present, the function does nothing and
@@ -154,7 +196,7 @@ protected:
  * returns its index
  *
  * @param[in] name the name of the interface to add
- * @return the index for the added interface in all the vectors
+ * @returns the index for the added interface in all the vectors
  * (command_interface_ids_, command_interface_name_ids_, write_functions_, data
  * but also state_interface_ids_, state_interface_name_ids_,
  * read_functions_)
@@ -196,7 +238,7 @@ protected:
   */
   std::vector<size_t> interface_name_ids_;
 
-}
+};
 
 } // < namespace ethercat_interface
 

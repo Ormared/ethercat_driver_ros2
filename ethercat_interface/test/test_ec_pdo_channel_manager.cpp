@@ -15,37 +15,38 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "ethercat_interface/ec_pdo_channel_manager.hpp"
+#include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
+#include "ethercat_interface/ec_pdo_group_interface_channel_manager.hpp"
 #include "yaml-cpp/yaml.h"
 
-TEST(TestEcPdoChannelManager, LoadFromConfig)
+TEST(TestEcPdoSingleInterfaceChannelManager, LoadFromConfig)
 {
   const char channel_config[] =
     R"(
       {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5, factor: 2, offset: 10}
     )";
   YAML::Node config = YAML::Load(channel_config);
-  ethercat_interface::EcPdoChannelManager pdo_manager;
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   pdo_manager.load_from_config(config);
 
   ASSERT_EQ(pdo_manager.index, 0x6071);
   ASSERT_EQ(pdo_manager.sub_index, 0);
-  ASSERT_EQ(pdo_manager.data_type, "int16");
-  ASSERT_EQ(pdo_manager.interface_name, "effort");
+  ASSERT_EQ(pdo_manager.data_type(), "int16");
+  ASSERT_EQ(pdo_manager.interface_name(), "effort");
   ASSERT_EQ(pdo_manager.default_value, -5);
   ASSERT_EQ(pdo_manager.factor, 2);
   ASSERT_EQ(pdo_manager.offset, 10);
 }
 
-TEST(TestEcPdoChannelManager, EcReadS16)
+TEST(TestEcPdoSingleInterfaceChannelManager, EcReadS16)
 {
   const char channel_config[] =
     R"(
       {index: 0x6071, sub_index: 0, type: int16, command_interface: effort, default: -5, factor: 2, offset: 10}
     )";
   YAML::Node config = YAML::Load(channel_config);
-  ethercat_interface::EcPdoChannelManager pdo_manager;
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   pdo_manager.load_from_config(config);
 
@@ -54,20 +55,20 @@ TEST(TestEcPdoChannelManager, EcReadS16)
   ASSERT_EQ(pdo_manager.ec_read(buffer), 2 * 42 + 10);
 }
 
-TEST(TestEcPdoChannelManager, EcReadWriteBit2)
+TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit2)
 {
   const char channel_config[] =
     R"(
       {index: 0x6071, sub_index: 0, type: bit2, mask: 3}
     )";
   YAML::Node config = YAML::Load(channel_config);
-  ethercat_interface::EcPdoChannelManager pdo_manager;
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   pdo_manager.load_from_config(config);
 
-  ASSERT_EQ(pdo_manager.data_type, "bit2");
-  ASSERT_EQ(pdo_manager.data_mask, 3);
-  ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 2);
+  ASSERT_EQ(pdo_manager.data_type(), "bit2");
+  ASSERT_EQ(pdo_manager.mask, 3);
+  ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 2);
 
   uint8_t buffer[1];
   EC_WRITE_U8(buffer, 0);
@@ -85,20 +86,20 @@ TEST(TestEcPdoChannelManager, EcReadWriteBit2)
   ASSERT_EQ(EC_READ_U8(buffer), 1);
 }
 
-TEST(TestEcPdoChannelManager, EcReadWriteBoolMask1)
+TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask1)
 {
   const char channel_config[] =
     R"(
       {index: 0x6071, sub_index: 0, type: bool, mask: 1}
     )";
   YAML::Node config = YAML::Load(channel_config);
-  ethercat_interface::EcPdoChannelManager pdo_manager;
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   pdo_manager.load_from_config(config);
 
-  ASSERT_EQ(pdo_manager.data_type, "bool");
-  ASSERT_EQ(pdo_manager.data_mask, 1);
-  ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 1);
+  ASSERT_EQ(pdo_manager.data_type(), "bool");
+  ASSERT_EQ(pdo_manager.mask, 1);
+  ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 1);
 
   uint8_t buffer[1];
   EC_WRITE_U8(buffer, 3);
@@ -112,20 +113,20 @@ TEST(TestEcPdoChannelManager, EcReadWriteBoolMask1)
   ASSERT_EQ(EC_READ_U8(buffer), 1);
 }
 
-TEST(TestEcPdoChannelManager, EcReadWriteBoolMask5)
+TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
 {
   const char channel_config[] =
     R"(
       {index: 0x6071, sub_index: 0, type: bool, mask: 5}
     )";
   YAML::Node config = YAML::Load(channel_config);
-  ethercat_interface::EcPdoChannelManager pdo_manager;
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
   pdo_manager.load_from_config(config);
 
-  ASSERT_EQ(pdo_manager.data_type, "bool");
-  ASSERT_EQ(pdo_manager.data_mask, 5);
-  ASSERT_EQ(pdo_manager.type2bits(pdo_manager.data_type), 1);
+  ASSERT_EQ(pdo_manager.data_type(), "bool");
+  ASSERT_EQ(pdo_manager.mask, 5);
+  ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 1);
 
   uint8_t buffer[1];
   EC_WRITE_U8(buffer, 7);

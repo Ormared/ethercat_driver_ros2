@@ -116,12 +116,14 @@ TEST_F(EcCiA402DriveTest, SlaveSetupDriveFromConfig)
   ASSERT_EQ(plugin_->tpdos_[0].index, 0x1a07);
   ASSERT_EQ(plugin_->tpdos_[1].index, 0x1a45);
 
-  ASSERT_EQ(plugin_->pdo_channels_info_[1].interface_name, "velocity");
-  ASSERT_EQ(plugin_->pdo_channels_info_[3].default_value, 1000);
-  ASSERT_TRUE(std::isnan(plugin_->pdo_channels_info_[0].default_value));
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].interface_name, "null");
-  ASSERT_EQ(plugin_->pdo_channels_info_[12].interface_name, "analog_input2");
-  ASSERT_EQ(plugin_->pdo_channels_info_[4].data_type, "uint16");
+
+  auto channels = plugin_->pdo_channels_info_;
+  ASSERT_EQ(channels[1]->interface_name(), "velocity");
+  ASSERT_EQ(channels[3]->data().default_value, 1000);
+  ASSERT_TRUE(std::isnan(channels[0]->data().default_value));
+  ASSERT_EQ(channels[4]->interface_name(), "null");
+  ASSERT_EQ(channels[12]->interface_name(), "analog_input2");
+  ASSERT_EQ(channels[4]->data_type(), "uint16");
 }
 
 TEST_F(EcCiA402DriveTest, SlaveSetupPdoChannels)
@@ -184,7 +186,7 @@ TEST_F(EcCiA402DriveTest, EcReadTPDOToStateInterface)
   plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[8].state_interface_index, 1);
+  ASSERT_EQ(plugin_->pdo_channels_info_[8]->state_interface_index(), 1);
   uint8_t domain_address[2];
   EC_WRITE_S16(domain_address, 42);
   plugin_->processData(8, domain_address);
@@ -201,11 +203,12 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDOFromCommandInterface)
   plugin_->parameters_ = slave_paramters;
   plugin_->setup_from_config(YAML::Load(test_drive_config));
   plugin_->setup_interface_mapping();
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].command_interface_index, 1);
+  auto channels = plugin_->pdo_channels_info_;
+  ASSERT_EQ(channels[2]->command_interface_index(), 1);
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
   plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, 42);
+  ASSERT_EQ(channels[2]->data().last_value, 42);
   ASSERT_EQ(EC_READ_S16(domain_address), 42);
 }
 
@@ -217,7 +220,8 @@ TEST_F(EcCiA402DriveTest, EcWriteRPDODefaultValue)
   plugin_->mode_of_operation_display_ = 10;
   uint8_t domain_address[2];
   plugin_->processData(2, domain_address);
-  ASSERT_EQ(plugin_->pdo_channels_info_[2].last_value, -5);
+  auto channels = plugin_->pdo_channels_info_;
+  ASSERT_EQ(channels[2]->data().last_value, -5);
   ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }
 

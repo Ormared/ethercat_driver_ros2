@@ -14,9 +14,8 @@
 //
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-
-#include "yaml-cpp/yaml.h"
 #include <algorithm>
+#include <iostream>
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -58,7 +57,7 @@ size_t typeIdx(const std::string & type)
   }
   // Handle the standard types
   auto it =
-    std::find(ec_pdo_channel_data_types.begin(), ec_pdo_channel_data_types.end(), data_type);
+    std::find(ec_pdo_channel_data_types.begin(), ec_pdo_channel_data_types.end(), type);
   if (it != ec_pdo_channel_data_types.end()) {
     return std::distance(ec_pdo_channel_data_types.begin(), it);
   }
@@ -82,6 +81,22 @@ uint8_t type2bits(const std::string & type)
   return ec_pdo_channel_data_bits[type_idx];
 }
 
+std::string id_and_bits_to_type(size_t type_idx, uint8_t bits)
+{
+  if (type_idx < ec_pdo_channel_data_types.size()) {
+    if (1 == type_idx) {
+      return "bit" + std::to_string(bits);
+    }
+    return ec_pdo_channel_data_types[type_idx];
+  } else {
+    throw std::out_of_range(
+            "id_and_bits_to_type: unknown index type (type_idx must be < " +
+            std::to_string(
+              ec_pdo_channel_data_types.size()) + ", the size of known types, instead of " +
+            std::to_string(type_idx) + " )");
+  }
+}
+
 #ifndef CLASSM
 #define CLASSM EcPdoChannelManager
 #else
@@ -91,12 +106,7 @@ uint8_t type2bits(const std::string & type)
 CLASSM::EcPdoChannelManager() {
 }
 
-std::string CLASSM::data_type() const
-{
-  if 0 != data_type_ {
-    return ec_pdo_channel_data_types[data_type_];
-  }
-  return ec_pdo_channel_data_types[0] + std::to_string(bits_);
+CLASSM::~EcPdoChannelManager() {
 }
 
 ec_pdo_entry_info_t CLASSM::get_pdo_entry_info()
@@ -106,9 +116,9 @@ ec_pdo_entry_info_t CLASSM::get_pdo_entry_info()
   oldState.copyfmt(std::cout);
   std::cout << "{0x" << std::hex << index << ", 0x" << (uint16_t)sub_index << ", ";
   std::cout.copyfmt(oldState);
-  std::cout << (int)bits() << "}," << std::endl;
+  std::cout << (int)pdo_bits() << "}," << std::endl;
 
-  return {index, sub_index, bits()};
+  return {index, sub_index, pdo_bits()};
 }
 
 void CLASSM::setup_interface_ptrs(
@@ -127,8 +137,6 @@ void CLASSM::ec_update(uint8_t * domain_address)
 
 
 #undef CLASSM
-
-typedef double SingleReadFunctionType(uint8_t * domain_address, uint8_t data_mask);
 
 double uint8_read(uint8_t * domain_address, uint8_t /*data_mask*/)
 {
