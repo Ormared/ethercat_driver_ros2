@@ -71,11 +71,11 @@ TEST_F(GenericEcSlaveTest, SlaveSetupNoSlaveConfig)
   SetUp();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
-  std::unordered_map<std::string, std::string> slave_paramters;
+  std::unordered_map<std::string, std::string> slave_parameters;
   // setup failed, 'slave_config' parameter not set
   ASSERT_EQ(
     plugin_->setupSlave(
-      slave_paramters,
+      slave_parameters,
       &state_interface,
       &command_interface
     ),
@@ -88,12 +88,12 @@ TEST_F(GenericEcSlaveTest, SlaveSetupMissingFileSlaveConfig)
   SetUp();
   std::vector<double> state_interface = {0};
   std::vector<double> command_interface = {0};
-  std::unordered_map<std::string, std::string> slave_paramters;
-  slave_paramters["slave_config"] = "slave_config.yaml";
+  std::unordered_map<std::string, std::string> slave_parameters;
+  slave_parameters["slave_config"] = "slave_config.yaml";
   // setup failed, 'slave_config.yaml' file not set
   ASSERT_EQ(
     plugin_->setupSlave(
-      slave_paramters,
+      slave_parameters,
       &state_interface,
       &command_interface
     ),
@@ -183,11 +183,11 @@ TEST_F(GenericEcSlaveTest, SlaveSetupDomains)
 TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
+  std::unordered_map<std::string, std::string> slave_parameters;
   std::vector<double> state_interface = {0, 0};
   plugin_->state_interface_ptr_ = &state_interface;
-  slave_paramters["state_interface/effort"] = "1";
-  plugin_->parameters_ = slave_paramters;
+  slave_parameters["state_interface/effort"] = "1";
+  plugin_->parameters_ = slave_parameters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   ASSERT_EQ(plugin_->pdo_channels_info_[8]->state_interface_index(), 1);
@@ -200,11 +200,11 @@ TEST_F(GenericEcSlaveTest, EcReadTPDOToStateInterface)
 TEST_F(GenericEcSlaveTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
-  std::unordered_map<std::string, std::string> slave_paramters;
+  std::unordered_map<std::string, std::string> slave_parameters;
   std::vector<double> command_interface = {0, 42};
   plugin_->command_interface_ptr_ = &command_interface;
-  slave_paramters["command_interface/effort"] = "1";
-  plugin_->parameters_ = slave_paramters;
+  slave_parameters["command_interface/effort"] = "1";
+  plugin_->parameters_ = slave_parameters;
   plugin_->setup_from_config(YAML::Load(test_slave_config));
   plugin_->setup_interface_mapping();
   auto channels = plugin_->pdo_channels_info_;

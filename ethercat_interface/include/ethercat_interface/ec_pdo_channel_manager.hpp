@@ -185,10 +185,10 @@ public:
   virtual std::string data_type(size_t i = 0) const = 0;
 
   /** @brief Get the data */
-  InterfaceData & data(size_t i = 0);
+  virtual InterfaceData & data(size_t i = 0) = 0;
 
   /** @brief Get the data */
-  const InterfaceData & data(size_t i = 0) const;
+  virtual const InterfaceData & data(size_t i = 0) const = 0;
 
   bool allow_ec_write = true;// < Is the PDO channel writable ?
 

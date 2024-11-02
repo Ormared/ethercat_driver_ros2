@@ -24,7 +24,7 @@
 
 #include "yaml-cpp/yaml.h"
 #include "ethercat_interface/ec_slave.hpp"
-#include "ethercat_interface/ec_pdo_channel_manager.hpp"
+#include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 #include "ethercat_generic_plugins/cia402_common_defs.hpp"
 

@@ -44,9 +44,9 @@ void EcCiA402Drive::updateState()
 void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 {
   auto index = domain_map_[entry_idx];
-  EcPdoSingleInterfaceChannelManager * channel_ptr =
-    static_cast<EcPdoSingleInterfaceChannelManager *>(pdo_channels_info_[index]);
-  EcPdoSingleInterfaceChannelManager & channel(*channel_ptr);
+  ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
+    static_cast<ethercat_interface::EcPdoSingleInterfaceChannelManager *>(pdo_channels_info_[index]);
+  ethercat_interface::EcPdoSingleInterfaceChannelManager & channel(*channel_ptr);
   // Special case: ControlWord
   if (channel.index == CiA402D_RPDO_CONTROLWORD) {
     if (is_operational_) {
@@ -112,7 +112,7 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 }
 
 bool EcCiA402Drive::setupSlave(
-  std::unordered_map<std::string, std::string> slave_paramters,
+  std::unordered_map<std::string, std::string> slave_parameters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
 {
