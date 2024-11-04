@@ -169,7 +169,7 @@ size_t CLASSM::add_data_without_interface()
   size_t id = v_data.size();
   allocate_for_new_interface();
   is_command_interface_[id] = false;
-  interface_name_ids_.push_back(std::numeric_limits<size_t>::max());
+  interface_name_ids_.push_back(0);
   return id;
 }
 

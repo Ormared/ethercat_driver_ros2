@@ -200,3 +200,48 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
   pdo_manager.ec_write(buffer, 5);
   ASSERT_EQ(EC_READ_U8(buffer), 5);
 }
+
+
+TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
+{
+  const char channel_config[] =
+    R"(
+      {
+        index: 0xf, 
+        sub_index: 0, 
+        type: bit240, 
+        data_mapping: [
+          {
+            addr_offset: 60,
+            type: int32,
+            factor: 3.14,
+            offset: 2.71,
+            command_interface: effort
+          },
+          {
+            addr_offset: 64,
+            type: int16,
+            factor: 1.1,
+            offset: 0.1,
+            state_interface: position
+          },
+          {
+            addr_offset: 66,
+            type: uint8,
+            factor: 1.1,
+            offset: 0.1
+          },
+          {
+            addr_offset: 67,
+            type: int8,
+            factor: 1.1,
+            offset: 0.1
+          }
+        ]
+      }
+    )";
+  YAML::Node config = YAML::Load(channel_config);
+  ethercat_interface::EcPdoGroupInterfaceChannelManager pdo_manager;
+  pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
+  ASSERT_EQ(pdo_manager.load_from_config(config), true);
+}
