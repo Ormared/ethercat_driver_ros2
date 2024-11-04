@@ -50,6 +50,13 @@ uint8_t type2bits(const std::string & type);
 /** @brief Returns the type name */
 std::string id_and_bits_to_type(size_t i, uint8_t bits);
 
+/** @brief Check if the definition of a type is correct
+ * @param[in] type the name of the type to check
+ * @param[in] mask the mask associated with the type to check the compatibility
+ * @return true if the type is correct, false otherwise
+ */
+bool check_type(const std::string & type, uint8_t mask);
+
 /** @brief Global table that stores all the names of the recorded state interfaces */
 extern std::vector<std::string> all_state_interface_names;
 
@@ -118,6 +125,7 @@ class EcPdoChannelManager
 {
 public:
   EcPdoChannelManager();
+  EcPdoChannelManager(const EcPdoChannelManager &) = delete;
   virtual ~EcPdoChannelManager() = 0;
 
 public:

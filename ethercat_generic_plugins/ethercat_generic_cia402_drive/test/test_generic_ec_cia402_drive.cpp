@@ -118,12 +118,14 @@ TEST_F(EcCiA402DriveTest, SlaveSetupDriveFromConfig)
 
 
   auto channels = plugin_->pdo_channels_info_;
-  ASSERT_EQ(channels[1]->interface_name(), "velocity");
-  ASSERT_EQ(channels[3]->data().default_value, 1000);
-  ASSERT_TRUE(std::isnan(channels[0]->data().default_value));
-  ASSERT_EQ(channels[4]->interface_name(), "null");
-  ASSERT_EQ(channels[12]->interface_name(), "analog_input2");
-  ASSERT_EQ(channels[4]->data_type(), "uint16");
+  ASSERT_EQ(channels[1]->interface_name(), "velocity") << "Interface name is not 'velocity'";
+  ASSERT_EQ(channels[3]->data().default_value, 1000) << "Default value is not 1000";
+  ASSERT_TRUE(std::isnan(channels[0]->data().default_value)) << "Default value is not NaN";
+  ASSERT_EQ(channels[4]->interface_name(), "null") << "Interface name is not 'null'";
+  ASSERT_EQ(
+    channels[12]->interface_name(),
+    "analog_input2") << "Interface name is not 'analog_input2'";
+  ASSERT_EQ(channels[4]->data_type(), "uint16") << "Data type is not 'uint16'";
 }
 
 TEST_F(EcCiA402DriveTest, SlaveSetupPdoChannels)

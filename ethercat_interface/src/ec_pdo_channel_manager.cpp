@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <iostream>
+// #include <bitset> // For debugging purpose
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -195,7 +196,8 @@ const SingleReadFunctionType ec_pdo_single_read_functions[] = {
   int8_read, uint8_read,
   int16_read, uint16_read,
   int32_read, uint32_read,
-  int64_read, uint64_read
+  int64_read, uint64_read,
+  octet_read
 };
 
 /*############################*/
@@ -242,11 +244,20 @@ void int64_write(uint8_t * domain_address, double value, uint8_t /*data_mask*/)
   EC_WRITE_S64(domain_address, static_cast<int64_t>(value));
 }
 
-// /** @brief Helper function that counts the number of bits in an octet */
-// uint8_t count_bits(uint8_t octet)
-// {
-//   return __builtin_popcount(octet);
-// }
+/** @brief Helper function that counts the number of bits in an octet */
+inline
+uint8_t count_bits(uint8_t octet)
+{
+  return __builtin_popcount(octet);
+}
+
+bool check_type(const std::string & type, uint8_t mask)
+{
+  if ("bool" == type) {
+    return 1 == count_bits(mask);
+  }
+  return true;
+}
 
 /** @brief Modify one bit defined by the mask
  * \pre The mask must contain only one bit set to one

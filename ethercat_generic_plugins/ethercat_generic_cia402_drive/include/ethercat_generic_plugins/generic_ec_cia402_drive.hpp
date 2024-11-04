@@ -43,7 +43,7 @@ public:
   virtual void processData(size_t entry_idx, uint8_t * domain_address);
 
   virtual bool setupSlave(
-    std::unordered_map<std::string, std::string> slave_paramters,
+    std::unordered_map<std::string, std::string> slave_parameters,
     std::vector<double> * state_interface,
     std::vector<double> * command_interface);
 

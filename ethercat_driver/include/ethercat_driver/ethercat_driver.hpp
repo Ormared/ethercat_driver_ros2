@@ -73,7 +73,7 @@ protected:
 
   uint16_t getAliasOrDefaultAlias(
     const std::unordered_map<std::string,
-    std::string> & slave_paramters);
+    std::string> & slave_parameters);
 
   virtual CallbackReturn setupMaster();
 

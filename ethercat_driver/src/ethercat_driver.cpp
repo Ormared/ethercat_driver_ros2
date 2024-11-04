@@ -27,10 +27,10 @@ namespace ethercat_driver
 
 uint16_t EthercatDriver::getAliasOrDefaultAlias(
   const std::unordered_map<std::string,
-  std::string> & slave_paramters)
+  std::string> & slave_parameters)
 {
-  if (slave_paramters.find("alias") != slave_paramters.end()) {
-    return std::stoul(slave_paramters.at("alias"));
+  if (slave_parameters.find("alias") != slave_parameters.end()) {
+    return std::stoul(slave_parameters.at("alias"));
   } else {
     return 0;
   }

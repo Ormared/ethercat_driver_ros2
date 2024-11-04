@@ -15,6 +15,7 @@
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
 #include <iostream>
+#include <bitset>
 #include "ethercat_interface/ec_pdo_group_interface_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -37,7 +38,7 @@ CLASSM::~EcPdoGroupInterfaceChannelManager()
 std::string CLASSM::interface_name(size_t i) const
 {
   if (v_data.size() > i) {
-    if (is_interface_defined(i) ) {
+    if (has_interface_name(i)) {
       if (is_command_interface_[i]) {
         return all_command_interface_names[interface_name_ids_[i]];
       } else {
@@ -212,8 +213,9 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   }
 
   // data type
+  std::string data_type;
   if (channel_config["type"]) {
-    std::string data_type = channel_config["type"].as<std::string>();
+    data_type = channel_config["type"].as<std::string>();
     data_type_idx_ = typeIdx(data_type);
     if (0 == data_type_idx_) {
       std::cerr << "channel" << index << " : unknown data type " << data_type << std::endl;
@@ -263,6 +265,12 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   if (channel_config["mask"]) {
     if (id != std::numeric_limits<size_t>::max()) {
       v_data[id].mask = channel_config["mask"].as<uint8_t>();
+      if (!check_type(data_type, v_data[id].mask) ) {
+        std::cerr << "channel: " << index << " : mask " << std::bitset<8>(v_data[id].mask) <<
+          " is not compatible with data type " <<
+          data_type << std::endl;
+        return false;
+      }
     } else {
       // Error
       // TODO(yguel@unistra: log error)
@@ -302,11 +310,11 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
         v_data[id].addr_offset = map["addr_offset"].as<size_t>();
       }
       if (map["type"]) {
-        std::string data_type = map["type"].as<std::string>();
+        data_type = map["type"].as<std::string>();
         auto type_idx = typeIdx(data_type);
         v_data[id].data_type_idx = type_idx;
         if (0 == v_data[id].data_type_idx) {
-          std::cerr << "channel" << index << " : unknown data type " << data_type << std::endl;
+          std::cerr << "channel: " << index << " : unknown data type " << data_type << std::endl;
           return false;
         }
         v_data[id].bits = type2bits(data_type);
@@ -327,6 +335,11 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
       // mask
       if (map["mask"]) {
         v_data[id].mask = map["mask"].as<uint8_t>();
+        if (!check_type(data_type, v_data[id].mask)) {
+          std::cerr << "channel" << index << " : mask " << std::bitset<8>(v_data[id].mask) <<
+            " is not compatible with data type " << data_type << std::endl;
+          return false;
+        }
       }
 
     }

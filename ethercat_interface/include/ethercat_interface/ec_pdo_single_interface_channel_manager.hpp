@@ -29,6 +29,7 @@ class EcPdoSingleInterfaceChannelManager : public EcPdoChannelManager, public In
 {
 public:
   EcPdoSingleInterfaceChannelManager();
+  EcPdoSingleInterfaceChannelManager(const EcPdoSingleInterfaceChannelManager &) = delete;
   ~EcPdoSingleInterfaceChannelManager();
 
 public:
@@ -76,11 +77,13 @@ public:
   inline std::string interface_name(size_t i = 0) const
   {
     if (0 == i) {
-      if (is_command_interface_defined()) {
+      if (has_command_interface_name()) {
         return all_command_interface_names[command_interface_name_idx_];
       } else {
-        if (is_state_interface_defined()) {
+        if (has_state_interface_name()) {
           return all_state_interface_names[state_interface_name_idx_];
+        } else {
+          return "null";
         }
       }
     }
@@ -120,6 +123,18 @@ public:
   void set_command_interface_index(const std::string & /*interface_name*/, size_t index)
   {
     command_interface_index_ = index;
+  }
+
+  inline
+  bool has_state_interface_name() const
+  {
+    return 0 != state_interface_name_idx_;
+  }
+
+  inline
+  bool has_command_interface_name() const
+  {
+    return 0 != command_interface_name_idx_;
   }
 
   inline

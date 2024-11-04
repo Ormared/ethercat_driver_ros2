@@ -49,6 +49,7 @@ class EcPdoGroupInterfaceChannelManager : public EcPdoChannelManager
 {
 public:
   EcPdoGroupInterfaceChannelManager();
+  EcPdoGroupInterfaceChannelManager(const EcPdoGroupInterfaceChannelManager &) = delete;
   ~EcPdoGroupInterfaceChannelManager();
 
 public:
@@ -150,6 +151,12 @@ public:
     return is_interface_defined(i) && is_command_interface_[i];
   }
 
+  inline
+  bool has_interface_name(size_t i) const
+  {
+    return 0 != interface_name_ids_[i];
+  }
+
 public:
 
 public:
@@ -234,7 +241,7 @@ protected:
    * If the interface is a command interface then the index refers to a name in
    * the all_command_interface_names vector, otherwise it refers to a name in the
    * all_state_interface_names vector.
-   * If the interface is not defined, the value is std::numeric_limits<size_t>::max()
+   * If the interface is not defined, the value is 0
   */
   std::vector<size_t> interface_name_ids_;
 

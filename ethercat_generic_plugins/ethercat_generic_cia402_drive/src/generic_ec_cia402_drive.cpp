@@ -45,7 +45,9 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
 {
   auto index = domain_map_[entry_idx];
   ethercat_interface::EcPdoSingleInterfaceChannelManager * channel_ptr =
-    static_cast<ethercat_interface::EcPdoSingleInterfaceChannelManager *>(pdo_channels_info_[index]);
+    static_cast<
+    ethercat_interface::EcPdoSingleInterfaceChannelManager *>(
+    pdo_channels_info_[index]);
   ethercat_interface::EcPdoSingleInterfaceChannelManager & channel(*channel_ptr);
   // Special case: ControlWord
   if (channel.index == CiA402D_RPDO_CONTROLWORD) {

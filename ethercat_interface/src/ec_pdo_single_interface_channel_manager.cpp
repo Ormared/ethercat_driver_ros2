@@ -14,8 +14,9 @@
 //
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-#include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
+#include <bitset>
 #include <iostream>
+#include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
 
 namespace ethercat_interface
 {
@@ -43,15 +44,13 @@ CLASSM::~EcPdoSingleInterfaceChannelManager()
 
 std::pair<bool, size_t> CLASSM::is_interface_managed(std::string name) const
 {
-  if (is_command_interface_defined()) {
+  if (has_command_interface_name()) {
     bool managed = (name == all_command_interface_names[command_interface_name_idx_]);
     if (managed) {
       return std::make_pair(true, 0);
-    } else {
-      return std::make_pair(false, std::numeric_limits<size_t>::max());
     }
   }
-  if (is_state_interface_defined()) {
+  if (has_state_interface_name()) {
     bool managed = (name == all_state_interface_names[state_interface_name_idx_]);
     if (managed) {
       return std::make_pair(true, 0);
@@ -76,22 +75,23 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   if (channel_config["sub_index"]) {
     sub_index = channel_config["sub_index"].as<uint8_t>();
   } else {
-    std::cerr << "channel " << index << " : missing channel info" << std::endl;
+    std::cerr << "channel: " << index << " : missing channel info" << std::endl;
   }
 
   // data type
+  std::string data_type;
   if (channel_config["type"]) {
-    std::string data_type = channel_config["type"].as<std::string>();
+    data_type = channel_config["type"].as<std::string>();
     data_type_idx_ = typeIdx(data_type);
     if (0 == data_type_idx_) {
-      std::cerr << "channel" << index << " : unknown data type " << data_type << std::endl;
+      std::cerr << "channel: " << index << " : unknown data type " << data_type << std::endl;
       return false;
     }
     bits_ = type2bits(data_type);
     read_function_ = ec_pdo_single_read_functions[data_type_idx_];
     write_function_ = ec_pdo_single_write_functions[data_type_idx_];
   } else {
-    std::cerr << "channel" << index << " : missing channel data type info" << std::endl;
+    std::cerr << "channel: " << index << " : missing channel data type info" << std::endl;
   }
 
   if (channel_config["command_interface"]) {
@@ -121,6 +121,11 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   // mask
   if (channel_config["mask"]) {
     mask = channel_config["mask"].as<uint8_t>();
+    if (!check_type(data_type, mask)) {
+      std::cerr << "channel: " << index << " : mask " << std::bitset<8>(mask) <<
+        " is not compatible with data type " << data_type << std::endl;
+      return false;
+    }
   }
 
   //skip
@@ -154,7 +159,6 @@ void CLASSM::ec_write(uint8_t * domain_address, double value, size_t /*i*/)
   if (RPDO != pdo_type || !allow_ec_write) {
     return;
   }
-
   if (!std::isnan(value) && !override_command) {
     last_value = factor * value + offset;
     write_function_(domain_address, last_value, mask);

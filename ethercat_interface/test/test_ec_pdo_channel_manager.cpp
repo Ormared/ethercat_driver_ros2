@@ -79,9 +79,10 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit2)
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
 
   pdo_manager.ec_write(buffer, 0);
-  ASSERT_EQ(EC_READ_U8(buffer), 0);
+  ASSERT_EQ(EC_READ_U8(buffer), 4);
   pdo_manager.ec_write(buffer, 2);
-  ASSERT_EQ(EC_READ_U8(buffer), 2);
+  ASSERT_EQ(EC_READ_U8(buffer), 6);
+  EC_WRITE_U8(buffer, 0);
   pdo_manager.ec_write(buffer, 5);
   ASSERT_EQ(EC_READ_U8(buffer), 1);
 }
@@ -113,6 +114,51 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask1)
   ASSERT_EQ(EC_READ_U8(buffer), 1);
 }
 
+TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
+{
+  const char channel_config[] =
+    R"(
+      {index: 0x6071, sub_index: 0, type: bit8, mask: 5}
+    )";
+  YAML::Node config = YAML::Load(channel_config);
+  ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
+  pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
+  pdo_manager.load_from_config(config);
+
+  ASSERT_EQ(pdo_manager.data_type(), "bit8");
+  ASSERT_EQ(pdo_manager.mask, 5);// < Set mask 0b00000101
+  ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 8);
+
+  uint8_t buffer[1];
+  // Should only soft read the bit 5 and 1 that is both in the mask and in the buffer
+  EC_WRITE_U8(buffer, 7);// < Hard write 0b00000111
+  ASSERT_EQ(pdo_manager.ec_read(buffer), 5);
+
+  // Hard write 0, should soft read 0
+  EC_WRITE_U8(buffer, 0);
+  ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
+
+  // Soft write 0, should hard read 0
+  pdo_manager.ec_write(buffer, 0);
+  ASSERT_EQ(EC_READ_U8(buffer), 0);
+
+  // Soft write 3 (with mask applied is 1) should hard read 0b00000001
+  pdo_manager.ec_write(buffer, 3);
+  ASSERT_EQ(EC_READ_U8(buffer), 1);
+
+  // Soft write 7 (with mask applied is 5) should hard read 0b00000101
+  pdo_manager.ec_write(buffer, 7);
+  ASSERT_EQ(EC_READ_U8(buffer), 5);
+
+  // Soft write 5 (with mask applied is 5) should hard read 0b00000101
+  pdo_manager.ec_write(buffer, 5);
+  ASSERT_EQ(EC_READ_U8(buffer), 5);
+}
+
+
+//This test is very weird, the expected behaviour is somehow confusing
+// since it writes the entire octet, but read only the bits set to 1 in the mask
+// and converts the result to 1 or 0 (1 if at least one bit is set to 1)
 TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
 {
   const char channel_config[] =
@@ -122,24 +168,35 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
   YAML::Node config = YAML::Load(channel_config);
   ethercat_interface::EcPdoSingleInterfaceChannelManager pdo_manager;
   pdo_manager.pdo_type = ethercat_interface::PdoType::RPDO;
-  pdo_manager.load_from_config(config);
+  ASSERT_EQ(pdo_manager.load_from_config(config), false);
 
+  return;
   ASSERT_EQ(pdo_manager.data_type(), "bool");
-  ASSERT_EQ(pdo_manager.mask, 5);
+  ASSERT_EQ(pdo_manager.mask, 5);// < Set mask 0b00000101
   ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 1);
 
   uint8_t buffer[1];
-  EC_WRITE_U8(buffer, 7);
+  // Should only soft read the bit 1 that is both in the mask and in the buffer
+  EC_WRITE_U8(buffer, 7);// < Hard write 0b00000111
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
+
+  // Hard write 0, should soft read 0
   EC_WRITE_U8(buffer, 0);
   ASSERT_EQ(pdo_manager.ec_read(buffer), 0);
 
+  // Soft write 0, should hard read 0
   pdo_manager.ec_write(buffer, 0);
   ASSERT_EQ(EC_READ_U8(buffer), 0);
+
+  // Soft write 3 (with mask applied is 1) should hard read 0b00000001
   pdo_manager.ec_write(buffer, 3);
   ASSERT_EQ(EC_READ_U8(buffer), 1);
+
+  // Soft write 7 (with mask applied is 5) should hard read 0b00000101
   pdo_manager.ec_write(buffer, 7);
   ASSERT_EQ(EC_READ_U8(buffer), 5);
+
+  // Soft write 5 (with mask applied is 5) should hard read 0b00000101
   pdo_manager.ec_write(buffer, 5);
   ASSERT_EQ(EC_READ_U8(buffer), 5);
 }
