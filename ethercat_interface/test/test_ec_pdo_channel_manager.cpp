@@ -207,9 +207,9 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
   const char channel_config[] =
     R"(
       {
-        index: 0xf, 
-        sub_index: 0, 
-        type: bit240, 
+        index: 0xf788,
+        sub_index: 0x00,
+        type: bit240,
         data_mapping: [
           {
             addr_offset: 60,
@@ -228,14 +228,12 @@ TEST(TestEcPdoGroupInterfaceChannelManager, LoadConfigTest)
           {
             addr_offset: 66,
             type: uint8,
-            factor: 1.1,
-            offset: 0.1
+            mask: 7,
           },
           {
             addr_offset: 67,
-            type: int8,
-            factor: 1.1,
-            offset: 0.1
+            type: bool,
+            mask: 8,
           }
         ]
       }
