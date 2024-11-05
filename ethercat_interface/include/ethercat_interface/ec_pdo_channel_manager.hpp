@@ -204,6 +204,8 @@ public:
   bool skip = false;// < Skip the PDO channel in ? TODO(@yguel@unistra.fr)
 
 public:
+  virtual size_t number_of_interfaces() const = 0;
+  virtual void setup_managed_interfaces() = 0;
   virtual size_t number_of_managed_interfaces() const = 0;
   virtual std::string interface_name(size_t i = 0) const = 0;
   virtual std::pair<bool, size_t> is_interface_managed(std::string interface_name) const = 0;

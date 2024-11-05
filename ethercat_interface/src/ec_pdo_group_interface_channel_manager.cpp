@@ -161,6 +161,9 @@ size_t CLASSM::add_command_interface(const std::string & name)
   all_command_interface_names.push_back(name);
   interface_name_ids_.push_back(name_idx);
 
+  // Add the interface to the managed interfaces
+  managed_.push_back(id);
+
   return id;
 }
 
@@ -191,6 +194,9 @@ size_t CLASSM::add_state_interface(const std::string & name)
   size_t name_idx = all_state_interface_names.size();
   all_state_interface_names.push_back(name);
   interface_name_ids_.push_back(name_idx);
+
+  // Add the interface to the managed interfaces
+  managed_.push_back(id);
 
   return id;
 }
@@ -348,6 +354,16 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   return true;
 }
 
+void CLASSM::setup_managed_interfaces()
+{
+  managed_.clear();
+  for (size_t i = 0; i < interface_name_ids_.size(); ++i) {
+    if (0 != interface_ids_[i]) {
+      managed_.push_back(i);
+    }
+  }
+}
+
 double CLASSM::ec_read(uint8_t * domain_address, size_t i)
 {
   InterfaceDataWithAddrOffset & d = v_data[i];
@@ -362,10 +378,11 @@ double CLASSM::ec_read(uint8_t * domain_address, size_t i)
 
 void CLASSM::ec_read_to_interface(uint8_t * domain_address)
 {
-  for (size_t i = 0; i < v_data.size(); ++i) {
-    ec_read(domain_address, i);
-    if (is_state_interface_defined(i) ) {
-      state_interface_ptr_->at(interface_ids_[i]) = v_data[i].last_value;
+  for (size_t i = 0; i < managed_.size(); ++i) {
+    const size_t idx = managed_[i];
+    ec_read(domain_address, idx);
+    if (is_state_interface_defined(idx) ) {
+      state_interface_ptr_->at(interface_ids_[idx]) = v_data[idx].last_value;
     }
   }
 }
@@ -393,15 +410,16 @@ void CLASSM::ec_write(uint8_t * domain_address, double value, size_t i)
 
 void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 {
-  for (size_t i = 0; i < v_data.size(); ++i) {
-    if (is_command_interface_defined(i) ) {
-      const auto value = command_interface_ptr_->at(interface_ids_[i]);
-      ec_write(domain_address, value, i);
+  for (size_t i = 0; i < managed_.size(); ++i) {
+    const size_t idx = managed_[i];
+    if (is_command_interface_defined(idx) ) {
+      const auto value = command_interface_ptr_->at(interface_ids_[idx]);
+      ec_write(domain_address, value, idx);
     } else {
-      auto & d = v_data[i];
+      auto & d = v_data[idx];
       if ( (RPDO == pdo_type) && allow_ec_write && !std::isnan(d.default_value)) {
         d.last_value = d.default_value;
-        write_functions_[i](domain_address + d.addr_offset, d.last_value, d.mask);
+        write_functions_[idx](domain_address + d.addr_offset, d.last_value, d.mask);
       }
     }
   }

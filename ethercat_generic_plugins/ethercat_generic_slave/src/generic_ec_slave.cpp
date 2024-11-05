@@ -20,21 +20,6 @@
 #include "ethercat_interface/ec_pdo_single_interface_channel_manager.hpp"
 #include "ethercat_interface/ec_pdo_group_interface_channel_manager.hpp"
 
-
-size_t type2bytes(std::string type)
-{
-  if (type == "int8" || type == "uint8") {
-    return 1;
-  } else if (type == "int16" || type == "uint16") {
-    return 2;
-  } else if (type == "int32" || type == "uint32") {
-    return 4;
-  } else if (type == "int64" || type == "uint64") {
-    return 8;
-  }
-  return 0;
-}
-
 namespace ethercat_generic_plugins
 {
 
@@ -277,7 +262,7 @@ void GenericEcSlave::setup_interface_mapping()
 {
   for (auto & channel_ptr : pdo_channels_info_) {
     auto & channel = *channel_ptr;
-    for (size_t i = 0; i < channel.number_of_managed_interfaces(); ++i) {
+    for (size_t i = 0; i < channel.number_of_interfaces(); ++i) {
       std::string interface = "state_interface/" + channel.interface_name(i);
       if (parameters_.find(interface) != parameters_.end()) {
         const size_t idx = std::stoi(parameters_[interface]);

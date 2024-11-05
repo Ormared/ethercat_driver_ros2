@@ -100,10 +100,18 @@ public:
 
 public:
   inline
-  size_t number_of_managed_interfaces() const
+  size_t number_of_interfaces() const
   {
     return v_data.size();
   }
+
+  inline
+  size_t number_of_managed_interfaces() const
+  {
+    return managed_.size();
+  }
+
+  void setup_managed_interfaces();
 
   std::string interface_name(size_t i = 0) const;
 
@@ -244,6 +252,13 @@ protected:
    * If the interface is not defined, the value is 0
   */
   std::vector<size_t> interface_name_ids_;
+
+  /** @brief Indices of the interfaces that are either state or command interfaces
+   * @details The indices are stored in the same order as the interfaces in the
+   * data vector. It stores only the indices of the interfaces index idx where
+   * interface_name_ids_[idx] is not 0.
+   */
+  std::vector<size_t> managed_;
 
 };
 

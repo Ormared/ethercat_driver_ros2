@@ -69,10 +69,19 @@ public:
 
 public:
   inline
-  size_t number_of_managed_interfaces() const
+  size_t number_of_interfaces() const
   {
     return 1;
   }
+
+  inline
+  size_t number_of_managed_interfaces() const
+  {
+    return (state_interface_name_idx_ + command_interface_name_idx_) > 0;
+  }
+
+  inline
+  void setup_managed_interfaces() {}
 
   inline std::string interface_name(size_t i = 0) const
   {
