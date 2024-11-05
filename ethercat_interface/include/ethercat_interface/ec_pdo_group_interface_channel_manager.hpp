@@ -14,10 +14,13 @@
 //
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-#ifndef ETHERRAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
-#define ETHERRAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
+#ifndef ETHERCAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
+#define ETHERCAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
 
 #include <utility>  // for std::pair
+#include <limits>
+#include <string>
+#include <vector>
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -29,7 +32,7 @@ struct InterfaceDataWithAddrOffset : public InterfaceData
   : InterfaceData(),
     addr_offset(0) {}
 
-  InterfaceDataWithAddrOffset(const InterfaceData & data)
+  explicit InterfaceDataWithAddrOffset(const InterfaceData & data)
   : InterfaceData(data),
     addr_offset(0) {}
 
@@ -166,8 +169,6 @@ public:
   }
 
 public:
-
-public:
   inline
   InterfaceData & data(size_t i = 0)
   {
@@ -259,10 +260,9 @@ protected:
    * interface_name_ids_[idx] is not 0.
    */
   std::vector<size_t> managed_;
-
 };
 
-} // < namespace ethercat_interface
+}  // < namespace ethercat_interface
 
 
-#endif // < ETHERRAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_
+#endif  // ETHERCAT_INTERFACE__EC_PDO_GROUP_INTERFACE_CHANNEL_MANAGER_HPP_

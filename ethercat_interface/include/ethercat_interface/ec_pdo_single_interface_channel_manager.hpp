@@ -14,9 +14,13 @@
 //
 // Author: Manuel YGUEL (yguel.robotics@gmail.com)
 
-#ifndef ETHERRAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_
-#define ETHERRAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_
+#ifndef ETHERCAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_
+#define ETHERCAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_
 
+#include <utility>  // for std::pair
+#include <limits>
+#include <string>
+#include <vector>
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 
 namespace ethercat_interface
@@ -97,8 +101,9 @@ public:
       }
     }
     throw std::out_of_range(
-            "EcPdoSingleInterfaceChannelManager::interface_name unknown interface index : must be 0 (instead of " + std::to_string(
-              i) + ")");
+            "EcPdoSingleInterfaceChannelManager::interface_name "
+            "unknown interface index : must be 0 (instead of " +
+            std::to_string(i) + ")");
   }
 
   inline
@@ -108,8 +113,9 @@ public:
       return id_and_bits_to_type(data_type_idx_, bits_);
     } else {
       throw std::out_of_range(
-              "EcPdoSingleInterfaceChannelManager::data_type unknown interface index : must be 0 (instead of " + std::to_string(
-                i) + ")");
+              "EcPdoSingleInterfaceChannelManager::data_type unknown "
+              "interface index : must be 0 (instead of " +
+              std::to_string(i) + ")");
     }
   }
 
@@ -175,8 +181,9 @@ public:
       return *this;
     }
     throw std::out_of_range(
-            "EcPdoSingleInterfaceChannelManager::data unknown interface index : must be 0 (instead of " + std::to_string(
-              i) + ")");
+            "EcPdoSingleInterfaceChannelManager::data unknown "
+            "interface index : must be 0 (instead of " +
+            std::to_string(i) + ")");
   }
 
   inline const InterfaceData & data(size_t i = 0) const
@@ -185,8 +192,9 @@ public:
       return *this;
     }
     throw std::out_of_range(
-            "EcPdoSingleInterfaceChannelManager::data unknown interface index : must be 0 (instead of " + std::to_string(
-              i) + ")");
+            "EcPdoSingleInterfaceChannelManager::data unknown "
+            "interface index : must be 0 (instead of " +
+            std::to_string(i) + ")");
   }
 
 protected:
@@ -202,10 +210,9 @@ protected:
   SingleWriteFunctionType write_function_ = nullptr;
   size_t state_interface_name_idx_ = 0;
   size_t command_interface_name_idx_ = 0;
-
 };
 
-} // < namespace ethercat_interface
+}  // < namespace ethercat_interface
 
 
-#endif // < ETHERRAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_
+#endif  // ETHERCAT_INTERFACE__EC_PDO_SINGLE_INTERFACE_CHANNEL_MANAGER_HPP_

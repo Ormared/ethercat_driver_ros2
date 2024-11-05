@@ -102,7 +102,7 @@ std::string id_and_bits_to_type(size_t type_idx, uint8_t bits)
 #define CLASSM EcPdoChannelManager
 #else
 #error alias CLASSM all ready defined!
-#endif // < CLASSM
+#endif  // < CLASSM
 
 CLASSM::EcPdoChannelManager() {
 }
@@ -115,9 +115,10 @@ ec_pdo_entry_info_t CLASSM::get_pdo_entry_info()
   // TODO(@yguel@unistra): Use ROS2 logging
   std::ios oldState(nullptr);
   oldState.copyfmt(std::cout);
-  std::cout << "{0x" << std::hex << index << ", 0x" << (uint16_t)sub_index << ", ";
+  std::cout << "{0x" << std::hex << index << ", 0x"
+            << static_cast<uint16_t>(sub_index) << ", ";
   std::cout.copyfmt(oldState);
-  std::cout << (int)pdo_bits() << "}," << std::endl;
+  std::cout << static_cast<int>(pdo_bits()) << "}," << std::endl;
 
   return {index, sub_index, pdo_bits()};
 }

@@ -25,7 +25,7 @@ namespace ethercat_interface
 #define CLASSM EcPdoGroupInterfaceChannelManager
 #else
 #error alias CLASSM all ready defined!
-#endif // < CLASSM
+#endif  // < CLASSM
 
 CLASSM::EcPdoGroupInterfaceChannelManager()
 {
@@ -49,9 +49,10 @@ std::string CLASSM::interface_name(size_t i) const
     }
   }
   throw std::out_of_range(
-          "EcPdoGroupInterfaceChannelManager::interface_name unknown interface index : must be < " + std::to_string(
-            v_data.size()) + "(instead of " + std::to_string(
-            i) + ")");
+          "EcPdoGroupInterfaceChannelManager::interface_name "
+          "unknown interface index : must be < " +
+          std::to_string(v_data.size()) + "(instead of " +
+          std::to_string(i) + ")");
 }
 
 std::string CLASSM::data_type(size_t i) const
@@ -61,9 +62,10 @@ std::string CLASSM::data_type(size_t i) const
     return id_and_bits_to_type(d.data_type_idx, d.bits);
   } else {
     throw std::out_of_range(
-            "EcPdoGroupInterfaceChannelManager::data_type unknown interface index : must be < " + std::to_string(
-              v_data.size()) + " (instead of " + std::to_string(
-              i) + ") ");
+            "EcPdoGroupInterfaceChannelManager::data_type unknown "
+            "interface index : must be < " +
+            std::to_string(v_data.size()) + " (instead of " +
+            std::to_string(i) + ") ");
   }
 }
 
@@ -87,7 +89,8 @@ size_t CLASSM::channel_state_interface_index(const std::string & name) const
     }
   }
   throw std::out_of_range(
-          "EcPdoSingleInterfaceChannelManager::interface_name unknown index for state interface");
+          "EcPdoSingleInterfaceChannelManager::channel_state_interface_index '" +
+          name + "' unknown index for state interface");
 }
 
 size_t CLASSM::channel_command_interface_index(const std::string & name) const
@@ -100,7 +103,9 @@ size_t CLASSM::channel_command_interface_index(const std::string & name) const
     }
   }
   throw std::out_of_range(
-          "EcPdoSingleInterfaceChannelManager::interface_name unknown index for command interface");
+          "EcPdoSingleInterfaceChannelManager::channel_command_interface_index '" +
+          name +
+          "' unknown index for command interface");
 }
 
 size_t CLASSM::state_interface_index(size_t i) const
@@ -113,9 +118,10 @@ size_t CLASSM::state_interface_index(size_t i) const
     }
   }
   throw std::out_of_range(
-          "EcPdoGroupInterfaceChannelManager::state_interface_index unknown interface index : must be < " + std::to_string(
-            v_data.size()) + "(instead of " + std::to_string(
-            i) + ")");
+          "EcPdoGroupInterfaceChannelManager::state_interface_index "
+          "unknown interface index : must be < " +
+          std::to_string(v_data.size()) +
+          "(instead of " + std::to_string(i) + ")");
 }
 
 size_t CLASSM::command_interface_index(size_t i) const
@@ -128,9 +134,10 @@ size_t CLASSM::command_interface_index(size_t i) const
     }
   }
   throw std::out_of_range(
-          "EcPdoGroupInterfaceChannelManager::command_interface_index unknown interface index : must be < " + std::to_string(
-            v_data.size()) + "(instead of " + std::to_string(
-            i) + ")");
+          "EcPdoGroupInterfaceChannelManager::command_interface_index "
+          "unknown interface index : must be < " +
+          std::to_string(v_data.size()) +
+          "(instead of " + std::to_string(i) + ")");
 }
 
 void CLASSM::allocate_for_new_interface()
@@ -203,7 +210,7 @@ size_t CLASSM::add_state_interface(const std::string & name)
 
 bool CLASSM::load_from_config(YAML::Node channel_config)
 {
-  //TODO(@yguel@unistra): Use ROS2 logging
+  // TODO(@yguel@unistra): Use ROS2 logging
   // index
   if (channel_config["index"]) {
     index = channel_config["index"].as<uint16_t>();
@@ -235,7 +242,9 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
   size_t id = std::numeric_limits<size_t>::max();
   if (channel_config["command_interface"]) {
     throw std::runtime_error(
-            "Global command_interface is not allowed in a grouped interface pdo channel, it must be defined per interface in the data_mapping");
+            "Global command_interface is not allowed in a grouped "
+            "interface pdo channel, it must be defined per interface "
+            "in the data_mapping");
   }
 
   if (channel_config["state_interface"]) {
@@ -283,7 +292,7 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
     }
   }
 
-  //skip
+  // skip
   if (channel_config["skip"]) {
     skip = channel_config["skip"].as<bool>();
     // TODO(yguel@unistra: check if skip is relevant in a grouped interface pdo channel)
@@ -347,7 +356,6 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
           return false;
         }
       }
-
     }
   }
 
@@ -427,4 +435,4 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 
 #undef CLASSM
 
-} // < namespace ethercat_interface
+}  // < namespace ethercat_interface

@@ -130,12 +130,12 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
   pdo_manager.load_from_config(config);
 
   ASSERT_EQ(pdo_manager.data_type(), "bit8");
-  ASSERT_EQ(pdo_manager.mask, 5);// < Set mask 0b00000101
+  ASSERT_EQ(pdo_manager.mask, 5);  // < Set mask 0b00000101
   ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 8);
 
   uint8_t buffer[1];
   // Should only soft read the bit 5 and 1 that is both in the mask and in the buffer
-  EC_WRITE_U8(buffer, 7);// < Hard write 0b00000111
+  EC_WRITE_U8(buffer, 7);  // < Hard write 0b00000111
   ASSERT_EQ(pdo_manager.ec_read(buffer), 5);
 
   // Hard write 0, should soft read 0
@@ -160,7 +160,7 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBit8Mask5)
 }
 
 
-//This test is very weird, the expected behaviour is somehow confusing
+// This test is very weird, the expected behaviour is somehow confusing
 // since it writes the entire octet, but read only the bits set to 1 in the mask
 // and converts the result to 1 or 0 (1 if at least one bit is set to 1)
 TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
@@ -176,12 +176,12 @@ TEST(TestEcPdoSingleInterfaceChannelManager, EcReadWriteBoolMask5)
 
   return;
   ASSERT_EQ(pdo_manager.data_type(), "bool");
-  ASSERT_EQ(pdo_manager.mask, 5);// < Set mask 0b00000101
+  ASSERT_EQ(pdo_manager.mask, 5);  // < Set mask 0b00000101
   ASSERT_EQ(ethercat_interface::type2bits(pdo_manager.data_type()), 1);
 
   uint8_t buffer[1];
   // Should only soft read the bit 1 that is both in the mask and in the buffer
-  EC_WRITE_U8(buffer, 7);// < Hard write 0b00000111
+  EC_WRITE_U8(buffer, 7);  // < Hard write 0b00000111
   ASSERT_EQ(pdo_manager.ec_read(buffer), 1);
 
   // Hard write 0, should soft read 0

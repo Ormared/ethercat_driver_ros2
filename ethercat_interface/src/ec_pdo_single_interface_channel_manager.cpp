@@ -25,7 +25,7 @@ namespace ethercat_interface
 #define CLASSM EcPdoSingleInterfaceChannelManager
 #else
 #error alias CLASSM all ready defined!
-#endif // < CLASSM
+#endif  // < CLASSM
 
 
 CLASSM::EcPdoSingleInterfaceChannelManager()
@@ -63,7 +63,7 @@ std::pair<bool, size_t> CLASSM::is_interface_managed(std::string name) const
 
 bool CLASSM::load_from_config(YAML::Node channel_config)
 {
-  //TODO(@yguel@unistra): Use ROS2 logging
+  // TODO(@yguel@unistra): Use ROS2 logging
   // index
   if (channel_config["index"]) {
     index = channel_config["index"].as<uint16_t>();
@@ -128,7 +128,7 @@ bool CLASSM::load_from_config(YAML::Node channel_config)
     }
   }
 
-  //skip
+  // skip
   if (channel_config["skip"]) {
     skip = channel_config["skip"].as<bool>();
   }
@@ -187,4 +187,4 @@ void CLASSM::ec_write_from_interface(uint8_t * domain_address)
 
 #undef CLASSM
 
-} // < namespace ethercat_interface
+}  // < namespace ethercat_interface

@@ -19,20 +19,22 @@
 #ifndef ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 #define ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
 
+#include <yaml-cpp/yaml.h>
 #include <ecrt.h>
+
 #include <string>
 #include <vector>
 #include <limits>
-#include <yaml-cpp/yaml.h>
 #include <stdexcept>
+#include <utility>
 
 namespace ethercat_interface
 {
 
 enum PdoType
 {
-  RPDO = 0, // < Receive PDO, Master out to Slave in (MoSi)
-  TPDO = 1 // < Transmit PDO, Master in from Slave out (MiSo)
+  RPDO = 0,  // < Receive PDO, Master out to Slave in (MoSi)
+  TPDO = 1  // < Transmit PDO, Master in from Slave out (MiSo)
 };
 
 /** @brief Global table that stores all the names of the known types */
@@ -143,7 +145,7 @@ public:
   /** @brief Load the channel configuration from a YAML node */
   virtual bool load_from_config(YAML::Node channel_config) = 0;
 
-/** @} */    // end of Setup methods
+/** @} */  // < end of Setup methods
 //=======================
 
 public:
@@ -165,7 +167,7 @@ public:
   /// @brief Update the state and command interfaces
   virtual void ec_update(uint8_t * domain_address);
 
-/** @} */    // < end of Data exchange methods
+/** @} */  // < end of Data exchange methods
 //=======================
 
 public:
@@ -198,10 +200,10 @@ public:
   /** @brief Get the data */
   virtual const InterfaceData & data(size_t i = 0) const = 0;
 
-  bool allow_ec_write = true;// < Is the PDO channel writable ?
+  bool allow_ec_write = true;  // < Is the PDO channel writable ?
 
 public:
-  bool skip = false;// < Skip the PDO channel in ? TODO(@yguel@unistra.fr)
+  bool skip = false;  // < Skip the PDO channel in ? TODO(@yguel@unistra.fr)
 
 public:
   virtual size_t number_of_interfaces() const = 0;
@@ -215,8 +217,8 @@ public:
   virtual size_t command_interface_index(size_t i = 0) const = 0;
 
 protected:
-  uint8_t bits_;// < Number of bits declared in the PDO
-  uint8_t data_type_idx_; // < Index to the table of types to infer the data type
+  uint8_t bits_;  // < Number of bits declared in the PDO
+  uint8_t data_type_idx_;  // < Index to the table of types to infer the data type
 
 protected:
   std::vector<double> * command_interface_ptr_;
@@ -224,4 +226,4 @@ protected:
 };
 
 }  // < namespace ethercat_interface
-#endif  // < ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
+#endif  // ETHERCAT_INTERFACE__EC_PDO_CHANNEL_MANAGER_HPP_
