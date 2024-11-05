@@ -82,28 +82,28 @@ std::pair<bool, size_t> CLASSM::is_interface_managed(std::string name) const
 size_t CLASSM::channel_state_interface_index(const std::string & name) const
 {
   for (size_t i = 0; i < v_data.size(); ++i) {
-    if (is_state_interface_defined(i)) {
-      if (name == all_state_interface_names[interface_name_ids_[i]]) {
+    if (has_interface_name(i) && !is_command_interface_.at(i)) {
+      if (name == all_state_interface_names.at(interface_name_ids_.at(i))) {
         return i;
       }
     }
   }
   throw std::out_of_range(
-          "EcPdoSingleInterfaceChannelManager::channel_state_interface_index '" +
+          "EcPdoGroupInterfaceChannelManager::channel_state_interface_index '" +
           name + "' unknown index for state interface");
 }
 
 size_t CLASSM::channel_command_interface_index(const std::string & name) const
 {
   for (size_t i = 0; i < v_data.size(); ++i) {
-    if (is_command_interface_defined(i)) {
-      if (name == all_command_interface_names[interface_name_ids_[i]]) {
+    if (has_interface_name(i) && is_command_interface_.at(i)) {
+      if (name == all_command_interface_names.at(interface_name_ids_.at(i))) {
         return i;
       }
     }
   }
   throw std::out_of_range(
-          "EcPdoSingleInterfaceChannelManager::channel_command_interface_index '" +
+          "EcPdoGroupInterfaceChannelManager::channel_command_interface_index '" +
           name +
           "' unknown index for command interface");
 }

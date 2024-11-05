@@ -141,15 +141,21 @@ public:
   }
 
   inline
-  bool has_state_interface_name() const
+  bool has_state_interface_name(size_t /*i*/ = 0) const
   {
     return 0 != state_interface_name_idx_;
   }
 
   inline
-  bool has_command_interface_name() const
+  bool has_command_interface_name(size_t /*i*/ = 0) const
   {
     return 0 != command_interface_name_idx_;
+  }
+
+  inline
+  bool has_interface_name(size_t /*i*/) const
+  {
+    return has_state_interface_name() || has_command_interface_name();
   }
 
   inline

@@ -134,38 +134,48 @@ public:
   void set_state_interface_index(const std::string & interface_name, size_t index)
   {
     size_t i = channel_state_interface_index(interface_name);
-    interface_ids_[i] = index;
+    interface_ids_.at(i) = index;
   }
 
   inline
   void set_command_interface_index(const std::string & interface_name, size_t index)
   {
     size_t i = channel_command_interface_index(interface_name);
-    interface_ids_[i] = index;
+    interface_ids_.at(i) = index;
   }
 
   inline
   bool is_interface_defined(size_t i) const
   {
-    return std::numeric_limits<size_t>::max() != interface_ids_[i];
+    return std::numeric_limits<size_t>::max() != interface_ids_.at(i);
   }
 
   inline
   bool is_state_interface_defined(size_t i) const
   {
-    return is_interface_defined(i) && !is_command_interface_[i];
+    return is_interface_defined(i) && !is_command_interface_.at(i);
   }
 
   inline
   bool is_command_interface_defined(size_t i) const
   {
-    return is_interface_defined(i) && is_command_interface_[i];
+    return is_interface_defined(i) && is_command_interface_.at(i);
   }
 
   inline
-  bool has_interface_name(size_t i) const
+  bool has_interface_name(size_t i = 0) const
   {
-    return 0 != interface_name_ids_[i];
+    return 0 != interface_name_ids_.at(i);
+  }
+
+  inline bool has_state_interface_name(size_t i = 0) const
+  {
+    return has_interface_name(i) && !is_command_interface_.at(i);
+  }
+
+  inline bool has_command_interface_name(size_t i = 0) const
+  {
+    return has_interface_name(i) && is_command_interface_.at(i);
   }
 
 public:
@@ -182,7 +192,7 @@ public:
   }
 
 protected:
-/** @brief Create the necesary allocations to add a new interface */
+/** @brief Create the necessary allocations to add a new interface */
   void allocate_for_new_interface();
 
 /** @brief Add a state interface named name

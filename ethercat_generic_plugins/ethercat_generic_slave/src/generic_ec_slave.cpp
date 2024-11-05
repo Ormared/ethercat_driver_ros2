@@ -263,15 +263,28 @@ void GenericEcSlave::setup_interface_mapping()
   for (auto & channel_ptr : pdo_channels_info_) {
     auto & channel = *channel_ptr;
     for (size_t i = 0; i < channel.number_of_interfaces(); ++i) {
-      std::string interface = "state_interface/" + channel.interface_name(i);
-      if (parameters_.find(interface) != parameters_.end()) {
-        const size_t idx = std::stoi(parameters_[interface]);
-        channel.set_state_interface_index(channel.interface_name(i), idx);
-      }
-      interface = "command_interface/" + channel.interface_name(i);
-      if (parameters_.find(interface) != parameters_.end()) {
-        const size_t idx = std::stoi(parameters_[interface]);
-        channel.set_command_interface_index(channel.interface_name(i), idx);
+      if (channel.has_state_interface_name(i) ) {
+        std::string interface = "state_interface/" + channel.interface_name(i);
+        if (parameters_.find(interface) != parameters_.end()) {
+          const size_t idx = std::stoi(parameters_[interface]);
+          channel.set_state_interface_index(channel.interface_name(i), idx);
+        }
+      } else if (channel.has_command_interface_name(i) ) {
+        std::string interface = "command_interface/" + channel.interface_name(i);
+        if (channel.pdo_type == ethercat_interface::RPDO) {
+          std::string interface = "command_interface/" + channel.interface_name(i);
+          if (parameters_.find(interface) != parameters_.end()) {
+            const size_t idx = std::stoi(parameters_[interface]);
+            channel.set_command_interface_index(channel.interface_name(i), idx);
+          }
+        } else {
+          throw std::runtime_error(
+                  std::string("GenericEcSlave: command interface (") +
+                  "index: " + channel.index_hex_str() + ", " +
+                  "sub_index: " + channel.sub_index_hex_str() + ", " +
+                  "name: " + interface +
+                  ") is not allowed for TPDO channels");
+        }
       }
     }
 

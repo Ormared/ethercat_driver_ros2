@@ -27,6 +27,7 @@
 #include <limits>
 #include <stdexcept>
 #include <utility>
+#include <sstream>
 
 namespace ethercat_interface
 {
@@ -179,6 +180,22 @@ public:
   uint16_t index;
   uint8_t sub_index;
 
+  inline
+  std::string index_hex_str() const
+  {
+    std::stringstream ss;
+    ss << "0x" << std::hex << index;
+    return ss.str();
+  }
+
+  inline
+  std::string sub_index_hex_str() const
+  {
+    std::stringstream ss;
+    ss << "0x" << std::hex << sub_index;
+    return ss.str();
+  }
+
   /** @brief Get the number of bits in the PDO */
   inline uint8_t pdo_bits() const {return bits_;}
 
@@ -215,6 +232,9 @@ public:
   virtual void set_command_interface_index(const std::string & interface_name, size_t index) = 0;
   virtual size_t state_interface_index(size_t i = 0) const = 0;
   virtual size_t command_interface_index(size_t i = 0) const = 0;
+  virtual bool has_interface_name(size_t i = 0) const = 0;
+  virtual bool has_state_interface_name(size_t i = 0) const = 0;
+  virtual bool has_command_interface_name(size_t i = 0) const = 0;
 
 protected:
   uint8_t bits_;  // < Number of bits declared in the PDO
