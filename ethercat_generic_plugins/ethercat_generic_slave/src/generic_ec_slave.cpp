@@ -18,7 +18,6 @@
 
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
 
-
 size_t type2bytes(std::string type)
 {
   if (type == "int8" || type == "uint8") {
@@ -169,27 +168,6 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     all_channels_.reserve(channels_nbr);
     channels_nbr = 0;
 
-    if (slave_config["rpdo"]) {
-      for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
-        auto rpdo_channels_size = slave_config["rpdo"][i]["channels"].size();
-        for (auto c = 0ul; c < rpdo_channels_size; c++) {
-          ethercat_interface::EcPdoChannelManager channel_info;
-          channel_info.pdo_type = ethercat_interface::RPDO;
-          channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
-          pdo_channels_info_.push_back(channel_info);
-          all_channels_.push_back(channel_info.get_pdo_entry_info());
-        }
-        rpdos_.push_back(
-          {
-            slave_config["rpdo"][i]["index"].as<uint16_t>(),
-            (unsigned int)(rpdo_channels_size),
-            all_channels_.data() + channels_nbr
-          }
-        );
-        channels_nbr += rpdo_channels_size;
-      }
-    }
-
     if (slave_config["tpdo"]) {
       for (auto i = 0ul; i < slave_config["tpdo"].size(); i++) {
         auto tpdo_channels_size = slave_config["tpdo"][i]["channels"].size();
@@ -202,13 +180,28 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
         tpdos_.push_back(
-          {
-            slave_config["tpdo"][i]["index"].as<uint16_t>(),
+          {slave_config["tpdo"][i]["index"].as<uint16_t>(),
             (unsigned int)(tpdo_channels_size),
-            all_channels_.data() + channels_nbr
-          }
-        );
+            all_channels_.data() + channels_nbr});
         channels_nbr += tpdo_channels_size;
+      }
+    }
+
+    if (slave_config["rpdo"]) {
+      for (auto i = 0ul; i < slave_config["rpdo"].size(); i++) {
+        auto rpdo_channels_size = slave_config["rpdo"][i]["channels"].size();
+        for (auto c = 0ul; c < rpdo_channels_size; c++) {
+          ethercat_interface::EcPdoChannelManager channel_info;
+          channel_info.pdo_type = ethercat_interface::RPDO;
+          channel_info.load_from_config(slave_config["rpdo"][i]["channels"][c]);
+          pdo_channels_info_.push_back(channel_info);
+          all_channels_.push_back(channel_info.get_pdo_entry_info());
+        }
+        rpdos_.push_back(
+          {slave_config["rpdo"][i]["index"].as<uint16_t>(),
+            (unsigned int)(rpdo_channels_size),
+            all_channels_.data() + channels_nbr});
+        channels_nbr += rpdo_channels_size;
       }
     }
 
@@ -222,7 +215,7 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
     return true;
   } else {
     std::cerr << "GenericEcSlave: failed to load slave configuration: empty configuration" <<
-      std::endl;
+        std::endl;
     return false;
   }
 }
@@ -265,7 +258,7 @@ void GenericEcSlave::setup_interface_mapping()
   }
 }
 
-}  // namespace ethercat_generic_plugins
+} // namespace ethercat_generic_plugins
 
 #include <pluginlib/class_list_macros.hpp>
 
