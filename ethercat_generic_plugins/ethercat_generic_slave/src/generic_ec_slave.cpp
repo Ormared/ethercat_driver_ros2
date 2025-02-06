@@ -198,9 +198,12 @@ bool GenericEcSlave::setup_from_config(YAML::Node slave_config)
           all_channels_.push_back(channel_info.get_pdo_entry_info());
         }
         rpdos_.push_back(
-          {slave_config["rpdo"][i]["index"].as<uint16_t>(),
+          {
+            slave_config["rpdo"][i]["index"].as<uint16_t>(),
             (unsigned int)(rpdo_channels_size),
-            all_channels_.data() + channels_nbr});
+            all_channels_.data() + channels_nbr
+            }
+        );
         channels_nbr += rpdo_channels_size;
       }
     }
