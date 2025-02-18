@@ -95,18 +95,18 @@ void EcMaster::addSlave(uint16_t alias, uint16_t position, EcSlave * slave)
 
   // check and setup dc
 
-  if (slave->assign_activate_dc_sync()) {
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
-    ecrt_slave_config_dc(
-      slave_info.config,
-      slave->assign_activate_dc_sync(),
-      interval_,
-      interval_ - (t.tv_nsec % (interval_)),
-      0,
-      0);
-  }
+  // if (slave->assign_activate_dc_sync()) {
+  //   struct timespec t;
+  //   clock_gettime(CLOCK_MONOTONIC, &t);
+  //   ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
+  //   ecrt_slave_config_dc(
+  //     slave_info.config,
+  //     slave->assign_activate_dc_sync(),
+  //     interval_,
+  //     interval_ - (t.tv_nsec % (interval_)),
+  //     0,
+  //     0);
+  // }
 
   slave_info_.push_back(slave_info);
 
@@ -292,8 +292,8 @@ void EcMaster::update(uint32_t domain)
 
   clock_gettime(CLOCK_REALTIME, &t);
   ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
-  ecrt_master_sync_reference_clock(master_);
-  ecrt_master_sync_slave_clocks(master_);
+  // ecrt_master_sync_reference_clock(master_);
+  // ecrt_master_sync_slave_clocks(master_);
 
   // send process data
   ecrt_domain_queue(domain_info->domain);
@@ -351,8 +351,8 @@ void EcMaster::writeData(uint32_t domain)
 
   clock_gettime(CLOCK_REALTIME, &t);
   ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
-  ecrt_master_sync_reference_clock(master_);
-  ecrt_master_sync_slave_clocks(master_);
+  // ecrt_master_sync_reference_clock(master_);
+  // ecrt_master_sync_slave_clocks(master_);
 
   // send process data
   ecrt_domain_queue(domain_info->domain);
