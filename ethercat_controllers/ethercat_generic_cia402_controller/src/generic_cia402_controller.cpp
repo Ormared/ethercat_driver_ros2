@@ -93,7 +93,7 @@ CiA402Controller::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration conf;
   conf.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  conf.names.reserve(dof_names_.size() * 2);
+  conf.names.reserve(dof_names_.size() * 3);
   for (const auto & dof_name : dof_names_) {
     conf.names.push_back(dof_name + "/" + "control_word");
     conf.names.push_back(dof_name + "/" + "mode_of_operation");
@@ -169,8 +169,8 @@ controller_interface::return_type CiA402Controller::update(
       }
     }
 
-    command_interfaces_[2 * i + 1].set_value(mode_ops_[i]);  // mode_of_operation
-    command_interfaces_[2 * i + 2].set_value(reset_faults_[i]);  // reset_fault
+    command_interfaces_[3 * i + 1].set_value(mode_ops_[i]);  // mode_of_operation
+    command_interfaces_[3 * i + 2].set_value(reset_faults_[i]);  // reset_fault
     reset_faults_[i] = false;
   }
 
