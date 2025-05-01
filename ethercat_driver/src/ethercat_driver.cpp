@@ -311,24 +311,25 @@ CallbackReturn EthercatDriver::on_activate(
     }
   }
 
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
   if (!master_.activate()) {
     RCLCPP_ERROR(rclcpp::get_logger("EthercatDriver"), "Activate EcMaster failed");
     return CallbackReturn::ERROR;
   }
   RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "Activated EcMaster!");
 
-  // start after one second
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-  t.tv_sec++;
+  t.tv_nsec += master_.getInterval();
+  while (t.tv_nsec >= 1000000000) {
+    t.tv_nsec -= 1000000000;
+    t.tv_sec++;
+  }
 
   bool running = true;
   while (running) {
     // wait until next shot
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-    // update EtherCAT bus
 
-    master_.update();
     RCLCPP_INFO(rclcpp::get_logger("EthercatDriver"), "updated!");
 
     // check if operational

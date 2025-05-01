@@ -55,7 +55,9 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
 
   // setup current position as default position
   if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
-    if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
+    if ( (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) &&
+      (mode_of_operation_display_ != ModeOfOperation::MODE_INGENIA_NO_MODE))
+    {
       pdo_channels_info_[index].default_value =
         pdo_channels_info_[index].factor * last_position_ +
         pdo_channels_info_[index].offset;

@@ -51,8 +51,9 @@ enum ModeOfOperation
   MODE_HOMING                 = 6,
   MODE_INTERPOLATED_POSITION  = 7,
   MODE_CYCLIC_SYNC_POSITION   = 8,
-  MODE_CYCLIC_SYNC_VELOCITY  = 9,
-  MODE_CYCLIC_SYNC_TORQUE     = 10
+  MODE_CYCLIC_SYNC_VELOCITY   = 9,
+  MODE_CYCLIC_SYNC_TORQUE     = 10,
+  MODE_INGENIA_NO_MODE        = 0xff
 };
 
 const std::map<DeviceState, std::string> DEVICE_STATE_STR = {
